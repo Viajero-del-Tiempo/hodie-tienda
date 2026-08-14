@@ -1,0 +1,127 @@
+<div class="list-container">
+  <mat-card class="list-card" appearance="outlined">
+    <!-- 1. Cabecera con Título y Botón "Crear" -->
+    <mat-card-header class="list-header">
+      <mat-card-title>Catálogo de Productos</mat-card-title>
+      <span class="header-spacer"></span>
+      <button matButton="elevated" [routerLink]="['/admin/products/new']">
+        <mat-icon>add</mat-icon>
+        Crear Producto
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Spinner de carga -->
+      @if (isLoading) {
+      <div class="loading-spinner-container">
+        <mat-spinner></mat-spinner>
+        <p>Cargando productos...</p>
+      </div>
+      } @else {
+      <!-- 2. Filtro -->
+      <mat-form-field class="filter-field" appearance="outline">
+        <input matInput (keyup)="applyFilter($event)" placeholder="Buscar Productos" #input />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- 3. Contenedor de la Tabla -->
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="product-table">
+          <!-- Columna Imagen (No ordenable) -->
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef>Imagen</th>
+            <td mat-cell *matCellDef="let product">
+              <img
+                [src]="
+                  product.imageUrls && product.imageUrls.length > 0
+                    ? product.imageUrls[0]
+                    : 'https://placehold.co/60x60/eeeeee/aaaaaa?text=Img'
+                "
+                alt="{{ product.name }}"
+                class="product-image"
+                onerror="this.src='https://placehold.co/60x60/eeeeee/aaaaaa?text=Error'"
+              />
+            </td>
+          </ng-container>
+
+          <!-- Columna Nombre (Ordenable) -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
+            <td mat-cell *matCellDef="let product">{{ product.name }}</td>
+          </ng-container>
+
+          <!-- Columna Precio (Ordenable) -->
+          <ng-container matColumnDef="price">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio</th>
+            <td mat-cell *matCellDef="let product">
+              {{ product.price | guarani }}
+            </td>
+          </ng-container>
+
+          <!-- Columna Stock (Ordenable) -->
+          <ng-container matColumnDef="stock">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Stock</th>
+            <td mat-cell *matCellDef="let product">{{ product.stock }}</td>
+          </ng-container>
+
+          <!-- Columna Acciones (No ordenable) -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let product">
+              <!-- Botón Ver Detalles -->
+              <button
+                matIconButton
+                (click)="viewProductDetails(product)"
+                matTooltip="Ver Detalles"
+                class="boton-ver-detalles"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <!-- Botón Editar: Navega al formulario con el ID -->
+              <button
+                matIconButton
+                [routerLink]="['/admin/products/edit', product.id]"
+                matTooltip="Editar Producto"
+                class="boton-editar"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <!-- Botón Borrar: Llama a una función (simulada) -->
+              <button
+                matIconButton
+                (click)="deleteProduct(product.id)"
+                matTooltip="Eliminar Producto"
+                class="boton-eliminar"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Definición de filas -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+          <!-- Fila de "No hay datos" (usando @if) -->
+          @if (dataSource.filteredData.length === 0) {
+          <tr class="mat-row-no-data">
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+              No se encontraron productos que coincidan con "{{ input.value }}"
+            </td>
+          </tr>
+          }
+        </table>
+      </div>
+
+      <!-- 4. Paginador -->
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 25, 100]"
+        [pageSize]="10"
+        aria-label="Seleccionar página de productos"
+        class="product-table"
+      >
+      </mat-paginator>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

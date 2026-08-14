@@ -1,0 +1,80 @@
+<footer class="app-footer">
+  <div class="footer-container">
+    <div class="footer-grid">
+      <!-- Columna 1: Marca y Descripción -->
+      <div class="footer-col brand-col">
+        <h2 class="footer-logo">HoDie</h2>
+        <p class="brand-desc">
+          HoDie es una tienda de regalos online enfocada en brindar una experiencia única a las
+          personas al recibir un regalo en una fecha especial.
+        </p>
+        <div class="social-links">
+          <a
+            href="https://www.facebook.com/share/1DVEx6RLWg/?mibextid=wwXIfr"
+            target="_blank"
+            rel="noopener noreferrer"
+            matIconButton
+            aria-label="Facebook"
+          >
+            <mat-icon>facebook</mat-icon>
+          </a>
+          <a
+            href="https://www.instagram.com/hodietienda"
+            target="_blank"
+            rel="noopener noreferrer"
+            matIconButton
+            aria-label="Instagram"
+          >
+            <mat-icon>photo_camera</mat-icon>
+            <!-- Usando photo_camera como placeholder de IG si no hay icono específico -->
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces Rápidos -->
+      <div class="footer-col links-col">
+        <h3>Explorar</h3>
+        <ul>
+          <li><a routerLink="/">Inicio</a></li>
+          <li><a routerLink="/store">Tienda</a></li>
+          <li><a routerLink="/services">Servicios</a></li>
+          <li><a routerLink="/contact">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información de Contacto -->
+      <div class="footer-col contact-col">
+        <h3>Contacto</h3>
+        <ul class="contact-list">
+          <li>
+            <mat-icon>location_on</mat-icon>
+            <span>Chaco Boreal y Capitán Domínguez - Caacupé</span>
+          </li>
+          <li>
+            <mat-icon>phone</mat-icon>
+            <a href="https://wa.me/message/HYXEK6L643HQE1">+595 983 957 102</a>
+          </li>
+          <li>
+            <mat-icon>email</mat-icon>
+            <a href="mailto:contacto@hodie.com.py">contacto@hodie.com.py</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Columna 4: Legal -->
+      <div class="footer-col legal-col">
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="#">Política de Privacidad</a></li>
+          <li><a href="#">Términos y Condiciones</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <mat-divider class="footer-divider"></mat-divider>
+
+    <div class="footer-bottom">
+      <p>&copy; {{ currentYear }} Hodie. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,204 @@
+/* Estilos Estructurales y de Layout para DashboardComponent
+   (Sin colores, fondos, sombras o bordes)
+*/
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.dashboard-container {
+  padding: 2rem; // Espaciado general del contenedor
+}
+
+// --- Definición del Grid ---
+
+.dashboard-grid {
+  display: grid;
+  // Un grid de 4 columnas por defecto (desktop)
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px; // Espacio entre tarjetas
+  margin-bottom: 24px;
+}
+
+// --- Clases de Span (Columnas) ---
+.grid-col-span-1 {
+  grid-column: span 1;
+}
+.grid-col-span-2 {
+  grid-column: span 2;
+}
+.grid-col-span-3 {
+  grid-column: span 3;
+}
+.grid-col-span-4 {
+  grid-column: span 4;
+}
+
+// --- Estilos de Tarjetas (Estructural) ---
+
+.kpi-card {
+  // Estilos de texto para los KPIs
+  .kpi-value {
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .kpi-comparison {
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  // Ajuste del ícono en la cabecera
+  ::ng-deep .mat-card-avatar {
+    height: 40px;
+    width: 40px;
+    font-size: 40px;
+  }
+}
+
+.chart-card {
+  .chart-container {
+    // Usamos min-height para asegurar el espacio
+    // ApexCharts gestionará su altura interna (definida en el TS)
+    min-height: 320px;
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // Asegura que el div del gráfico ocupe el espacio
+    #sales-chart-container,
+    #status-chart-container {
+      width: 100%;
+    }
+  }
+  min-width: 0; // Evita overflow en grids pequeños
+}
+
+.activity-card {
+  // Estilos para la lista de pedidos
+  .order-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+
+  .order-title {
+    font-weight: 500;
+  }
+
+  .order-total {
+    width: 150px;
+    font-weight: 500;
+    font-size: 1rem;
+    margin-top: 1.25rem;
+    padding-left: 1.25rem;
+    border-left: 2px solid #f59e0b;
+  }
+
+  .order-customer {
+    font-size: 0.875rem;
+  }
+
+  .order-status {
+    padding: 0.2rem 0.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    margin-top: 1.25rem;
+
+    /* NOTA: Los estados (pendiente, completado) NECESITARÁN 
+     colores de fondo/texto para ser útiles. 
+    */
+    &.status-pendiente {
+      // Pendiente
+      color: #ffc107;
+    }
+
+    &.status-pagado {
+      //Pagado
+      color: #2196f3;
+    }
+
+    &.status-enviado {
+      // Enviado
+      color: #3f51b5;
+    }
+
+    &.status-entregado {
+      // Completado
+      color: #4caf50;
+    }
+
+    &.status-cancelado {
+      // Cancelado
+      color: #f44336;
+    }
+  }
+}
+
+// --- Responsividad ---
+
+// Tablet (Ej: < 1200px)
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    // Cambiamos a un grid de 2 columnas
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // En 2 columnas, los gráficos grandes deben ocupar todo el ancho
+  .grid-col-span-3 {
+    grid-column: span 2;
+  }
+  .grid-col-span-4 {
+    grid-column: span 2;
+  }
+}
+
+// Móvil (Ej: < 768px)
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem; // Menos padding en móvil
+  }
+
+  .dashboard-grid {
+    // Una sola columna
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  // Todos los items ocupan 1 columna en móvil
+  .grid-col-span-1,
+  .grid-col-span-2,
+  .grid-col-span-3,
+  .grid-col-span-4 {
+    grid-column: span 1;
+  }
+
+  .kpi-card .kpi-value {
+    font-size: 1.75rem; // Tamaño de fuente más pequeño
+  }
+
+  .chart-card .chart-container {
+    min-height: 300px; // Gráficos más bajos en móvil
+  }
+
+  .order-total {
+    display: none;
+  }
+}
+
+.card-outline-color {
+  @include mat.card-overrides(
+    (
+      outlined-outline-color: #f59e0b,
+      outlined-container-color: #ffffff,
+    )
+  );
+}

@@ -1,0 +1,18 @@
+<div class="quantity-input-container">
+  <button matIconButton (click)="decrement()" [disabled]="quantity <= 1">
+    <mat-icon>remove</mat-icon>
+  </button>
+  <input
+    matInput
+    type="number"
+    [value]="quantity"
+    (change)="onQuantityInputChange($event)"
+    min="1"
+    [max]="maxQuantity"
+    class="quantity-input"
+  />
+  <button matIconButton (click)="increment()" [disabled]="quantity >= maxQuantity">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+

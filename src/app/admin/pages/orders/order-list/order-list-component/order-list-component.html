@@ -1,0 +1,100 @@
+<div class="list-container">
+  <mat-card class="list-card card-outline-color" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Historial de Pedidos</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- 1. Filtro (Search Box) -->
+      <mat-form-field class="filter-field" appearance="outline">
+        <input matInput (keyup)="applyFilter($event)" placeholder="Buscar Pedidos" #input />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- 2. Contenedor de la Tabla (para overflow en móvil) -->
+      <div class="table-container">
+        <!-- 
+          La tabla necesita 'matSort' para ordenar 
+          y '[dataSource]' para los datos.
+        -->
+        <table mat-table [dataSource]="dataSource" matSort class="order-table">
+          <!-- Columna ID (Ordenable) -->
+          <ng-container matColumnDef="orderNumber">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>N° Pedido</th>
+            <td mat-cell *matCellDef="let order">{{ order.orderNumber }}</td>
+          </ng-container>
+
+          <!-- Columna Cliente (Ordenable) -->
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+            <td mat-cell *matCellDef="let order">{{ order.userDisplayName }}</td>
+          </ng-container>
+
+          <!-- Columna Fecha (Ordenable) -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+            <td mat-cell *matCellDef="let order">
+              {{ order.createdAt.toDate() | date : 'dd/MM/yyyy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <!-- Columna Total (Ordenable) -->
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
+            <td mat-cell *matCellDef="let order">
+              {{ order.total | guarani }}
+            </td>
+          </ng-container>
+
+          <!-- Columna Estado (Ordenable) -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+            <td mat-cell *matCellDef="let order">
+              <!-- Usamos una clase simple para el estado (luego le das color) -->
+              <span class="order-status-pill status-{{ order.status | lowercase }}">
+                {{ order.status | statusLabel }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Acciones (No ordenable) -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let order">
+              <button
+                matIconButton
+                class="mat-icon-button"
+                [routerLink]="['/admin/orders', order.id]"
+                matTooltip="Ver Detalle"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Definición de filas -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+          <!-- Fila que se muestra si no hay datos -->
+          @if (dataSource.filteredData.length === 0) {
+          <tr class="mat-row-no-data">
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+              No se encontraron pedidos que coincidan con "{{ input.value }}"
+            </td>
+          </tr>
+          }
+        </table>
+      </div>
+
+      <!-- 3. Paginador -->
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 25, 100]"
+        [pageSize]="10"
+        aria-label="Seleccionar página de pedidos"
+        class="order-table"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div>

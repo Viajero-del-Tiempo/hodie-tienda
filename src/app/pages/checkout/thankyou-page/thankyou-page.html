@@ -1,0 +1,28 @@
+<div class="success-container">
+  <div class="success-card">
+    <div class="success-icon-wrapper">
+      <div class="icon-ring"></div>
+      <mat-icon class="success-icon">check_circle</mat-icon>
+    </div>
+
+    <h1>¡Gracias por tu compra!</h1>
+
+    <div class="order-badge" *ngIf="orderNumber">CÓDIGO DE PEDIDO: {{ orderNumber }}</div>
+
+    <p class="description">
+      Tu pedido ha sido recibido con éxito y ya está siendo procesado por nuestro equipo.
+    </p>
+
+    <div class="whatsapp-info">
+      <mat-icon class="whatsapp-icon">chat</mat-icon>
+      <div class="whatsapp-text">
+        <strong>Confirmación en camino:</strong> Te contactaremos por WhatsApp al número registrado
+        para coordinar los detalles de la entrega y el pago.
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" mat-button routerLink="/store">Seguir Comprando</button>
+    </div>
+  </div>
+</div>

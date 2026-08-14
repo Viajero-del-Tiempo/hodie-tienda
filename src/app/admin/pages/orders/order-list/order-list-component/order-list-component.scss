@@ -1,0 +1,108 @@
+/* Estilos Estructurales para OrderList (Sin Colores) */
+
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.list-container {
+  padding: 1.5rem; // Espaciado general
+}
+
+.list-card {
+  padding: 1rem; // Espaciado interno de la tarjeta
+}
+
+.filter-field {
+  // El filtro ocupa todo el ancho
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.table-container {
+  // Permite scroll horizontal en pantallas pequeñas
+  overflow-x: auto;
+  // Margen para que el paginador no se pegue
+  margin-bottom: 1rem;
+}
+
+.order-table {
+  // La tabla ocupa el 100% de su contenedor
+  width: 100%;
+  background-color: transparent; // Sin fondo
+}
+
+// Fila que se muestra cuando no hay datos
+.mat-row-no-data {
+  text-align: center;
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+/* Estructura de la "píldora" de estado (solo layout) */
+.order-status-pill {
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px; // píldora
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  // (Aquí aplicarías tus 'background-color' y 'color' 
+  // basados en las clases .status-pendiente, .status-completado, etc.)
+  &.status-pending {
+    // Pendiente
+    color: #FACC15;
+  }
+
+  &.status-paid {
+    //Pagado
+    color: #22C55E;
+  }
+
+  &.status-preparing {
+    //Preparacion
+    color: #3B82F6;
+  }
+
+  &.status-shipped {
+    // Enviado
+    color: #6366F1;
+  }
+
+  &.status-delivered {
+    // Completado
+    color: #15803D;
+  }
+
+  &.status-cancelled {
+    // Cancelado
+    color: #EF4444;
+  }
+  
+}
+
+// Espaciado de las celdas
+.mat-mdc-cell, .mat-mdc-header-cell {
+  padding: 0 0.75rem;
+}
+
+// La columna de acciones suele ser más pequeña
+.mat-column-actions {
+  width: 120px;
+  text-align: right;
+}
+
+/* Colores para la tarjeta de la lista de pedidos */
+.card-outline-color {
+  padding: 1rem;
+  @include mat.card-overrides(
+    (
+      outlined-outline-color: #f59e0b,
+      outlined-container-color: #ffffff,
+    )
+  );
+}
+
+.mat-icon-button {
+  color: #7d5725;
+}

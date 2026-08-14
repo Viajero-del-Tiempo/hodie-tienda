@@ -1,0 +1,227 @@
+/* Estilos Estructurales para HomePage (E-Commerce) */
+
+:host {
+  display: block;
+}
+
+/* --- SECCIONES (Padding y Título) --- */
+
+.section-padding {
+  // Espaciado generoso
+  padding: 5rem 2.5rem;
+
+  @media (max-width: 768px) {
+    padding: 3rem 1.5rem;
+  }
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.25rem; // Un poco más grande
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 3rem;
+}
+
+/* --- 1. HERO SECTION --- */
+
+.hero-section {
+  display: grid;
+  // 2 columnas en desktop (50/50)
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  min-height: 80vh; // Altura mínima
+  padding: 2.5rem;
+  background-color: #171717;
+  color: #ffffff;
+
+  @media (max-width: 960px) {
+    // 1 columna en móvil/tablet
+    grid-template-columns: 1fr;
+    text-align: center;
+    min-height: 60vh;
+  }
+}
+
+.hero-content {
+  padding: 2rem; // Espacio para el texto
+
+  .hero-title {
+    font-size: 3rem; // Título grande
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    margin: 1rem 0 2rem 0;
+    max-width: 500px;
+    color: #e0e0e0; // Gris claro para contraste
+  }
+
+  @media (max-width: 960px) {
+    // La imagen aparece primero en móvil
+    order: 2;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+    .hero-title {
+      font-size: 2rem;
+    }
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+  }
+}
+
+.hero-image-container {
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  box-sizing: border-box; // Para que el padding no desborde
+
+  @media (max-width: 960px) {
+    // La imagen aparece primero en móvil
+    order: 1;
+    padding: 1rem;
+    max-height: 50vh;
+  }
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  max-height: 70vh;
+  object-fit: contain; // Para que la caja se vea completa
+}
+
+/* --- 2. FEATURED CAROUSEL (SWIPER) --- */
+
+.featured-carousel-container {
+  width: 100%;
+  padding: 0 1rem; // Padding lateral opcional
+  box-sizing: border-box;
+  overflow: hidden; // Prevenir scroll bar horizontal accidental
+
+  swiper-container {
+    width: 100%;
+
+    // Hack para que todas las slides tengan la misma altura
+    // (Swiper usa display flex en el wrapper)
+    &::part(wrapper) {
+      align-items: stretch;
+    }
+  }
+
+  swiper-slide {
+    height: auto; // Dejar crecer para llenar el contenedor
+    display: flex;
+    justify-content: center;
+
+    // Forzar que el componente de tarjeta ocupe todo el alto
+    ::ng-deep app-product-card {
+      width: 100%;
+      height: 100%;
+      display: block;
+
+      mat-card {
+        height: 100%; // La tarjeta material llena el componente
+      }
+    }
+  }
+}
+
+/* --- 3. CATEGORÍAS --- */
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: 1fr; // 1 columna móvil
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr); // 3 columnas desktop
+  }
+}
+
+.category-card {
+  position: relative; // Para el texto superpuesto
+
+  // (Aquí aplicarías un 'border-radius')
+  img {
+    display: block; // Evita espacios extra
+  }
+}
+
+.category-content-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  // (Aquí aplicarías un 'background' gradiente y 'color' de texto)
+
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+/* --- 4. PROPUESTAS DE VALOR --- */
+
+.values-grid {
+  display: grid;
+  grid-template-columns: 1fr; // 1 columna móvil
+  gap: 2.5rem;
+  text-align: center;
+  max-width: 1000px;
+  margin: 0 auto; // Centrado
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr); // 3 columnas desktop
+  }
+}
+
+.value-item {
+  .value-icon {
+    // Icono grande
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+    margin: 1rem 0 0.5rem 0;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+/* --- 5. CTA SECTION --- */
+
+.cta-section {
+  text-align: center;
+  // (Aquí tu 'background' de acento)
+
+  .cta-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.ver-mas-button-container {
+  text-align: center;
+
+  .ver-mas-button {
+    margin-top: 3rem;
+  }
+}

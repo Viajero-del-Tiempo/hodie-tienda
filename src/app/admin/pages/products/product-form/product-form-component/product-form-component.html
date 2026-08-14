@@ -1,0 +1,173 @@
+<div class="form-container">
+  <!-- 1. Cabecera (Volver y Título) -->
+  <header class="form-header">
+    <button matButton (click)="goBack()" matTooltip="Volver a la lista">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>
+      <!-- Título dinámico -->
+      {{ isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto' }}
+    </h1>
+  </header>
+
+  <!-- Barra de progreso para indicar carga -->
+  @if (loading) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  <!-- 2. Formulario (asociado con 'productForm') -->
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <!-- Grid de 3 columnas -->
+    <div class="form-grid">
+      <!-- Columna Izquierda (Info Principal y Empaques) -->
+      <div class="grid-col-span-2">
+        <mat-card class="form-card" appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>Información Principal</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+           <div class="name-description-grid">
+             <!-- Nombre -->
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre del Producto</mat-label>
+              <input matInput formControlName="name" required />
+              @if (productForm.get('name')?.hasError('required')) {
+              <mat-error>El nombre es obligatorio</mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Descripción -->
+            <mat-form-field appearance="outline">
+              <mat-label>Descripción</mat-label>
+              <textarea matInput formControlName="description" rows="5"></textarea>
+            </mat-form-field>
+           </div>
+
+            <!-- Grid interna para Precio y Stock -->
+            <div class="price-stock-grid">
+              <!-- Precio -->
+              <mat-form-field appearance="outline">
+                <mat-label>Precio (PYG)</mat-label>
+                <input matInput type="number" formControlName="price" required min="0" />
+                @if (productForm.get('price')?.hasError('required')) {
+                <mat-error>El precio es obligatorio</mat-error>
+                }
+              </mat-form-field>
+
+              <!-- Stock -->
+              <mat-form-field appearance="outline">
+                <mat-label>Stock (Unidades)</mat-label>
+                <input matInput type="number" formControlName="stock" required min="0" />
+                @if (productForm.get('stock')?.hasError('required')) {
+                <mat-error>El stock es obligatorio</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Tarjeta de Precios de Empaque -->
+        <mat-card class="form-card" appearance="outlined" formGroupName="packagingPrices">
+          <mat-card-header>
+            <mat-card-title>Precios de Empaque</mat-card-title>
+            <mat-card-subtitle>Define un precio para cada tipo de empaque si aplica.</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content class="packaging-prices-grid">
+            @for (option of packagingOptions; track option.type) {
+              <mat-form-field appearance="outline">
+                <mat-label>{{ option.name }} (PYG)</mat-label>
+                <input matInput type="number" [formControlName]="option.type" min="0" />
+              </mat-form-field>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Columna Derecha (Organización e Imagen) -->
+      <div class="grid-col-span-1">
+        <!-- Tarjeta de Imagen -->
+        <mat-card class="form-card" appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>Imagenes del Producto</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <!-- Vista previa de las imágenes -->
+            <div class="image-previews-container">
+              @for (imageUrl of imagePreviewUrls; track imageUrl; let i = $index) {
+              <div class="image-preview-item">
+                <img
+                  [src]="imageUrl"
+                  alt="Vista previa {{ i + 1 }}"
+                  onerror="this.src='https://placehold.co/100x100/eeeeee/aaaaaa?text=Error'"
+                />
+                <button
+                  matIconButton
+                  type="button"
+                  class="remove-image-button"
+                  (click)="removeImage(i)"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              } @if (imagePreviewUrls.length === 0) {
+              <div class="image-preview-placeholder">
+                <img
+                  src="https://placehold.co/100x100/eeeeee/aaaaaa?text=Subir+Imágenes"
+                  alt="Placeholder"
+                />
+              </div>
+              }
+            </div>
+            <!-- Input de archivo oculto -->
+            <input
+              type="file"
+              #fileInput
+              style="display: none"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              multiple
+            />
+            <!-- Botón para disparar el input de archivo -->
+            <button
+              matButton="elevated"
+              type="button"
+              class="upload-button"
+              (click)="fileInput.click()"
+            >
+              <mat-icon>upload</mat-icon>
+              Subir Imágenes
+            </button>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Tarjeta de Organización -->
+        <mat-card class="form-card" appearance="outlined">
+          <mat-card-header>
+            <mat-card-title>Organización</mat-card-title>
+          </mat-card-header>
+          <mat-card-actions>
+            <!-- SKU -->
+            <mat-form-field appearance="outline">
+              <mat-label> Código </mat-label>
+              <input matInput formControlName="sku" />
+              @if (productForm.get('sku')?.hasError('required')) {
+              <mat-error>El código es obligatorio</mat-error>
+              }
+            </mat-form-field>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- 3. Acciones del Formulario (Footer) -->
+    <footer class="form-actions">
+      <button matButton type="button" (click)="goBack()" [disabled]="loading">
+        Cancelar
+      </button>
+      <button matButton="elevated" type="submit" [disabled]="productForm.invalid || loading">
+        <mat-icon> {{ isEditMode ? 'update' : 'save_alt' }} </mat-icon>
+        {{ isEditMode ? 'Actualizar Producto' : 'Guardar Producto' }}
+      </button>
+    </footer>
+  </form>
+</div>

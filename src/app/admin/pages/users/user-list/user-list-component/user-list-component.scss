@@ -1,0 +1,95 @@
+/* Estilos Estructurales para UserList (Sin Colores) */
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.list-container {
+  padding: 1.5rem; // Espaciado general
+}
+
+.list-card {
+  padding: 1rem; // Espaciado interno
+}
+
+/* Cabecera de la tarjeta (Título y Botón) */
+.list-header {
+  display: flex;
+  justify-content: space-between; /* Distribuye el espacio entre los elementos */
+  align-items: center;
+  padding-bottom: 1rem;
+}
+
+.add-user-button {
+  margin-left: auto; /* Empuja el botón a la derecha */
+}
+
+.filter-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.user-table {
+  width: 100%;
+  background-color: transparent; // Sin fondo;
+}
+
+// Estilos del avatar en la tabla
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%; // Avatares redondos
+  // (Aquí podrías añadir un borde)
+}
+
+// Fila de "No hay datos"
+.mat-row-no-data {
+  text-align: center;
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+// Espaciado de celdas
+.mat-mdc-cell, .mat-mdc-header-cell {
+  padding: 0 0.75rem;
+}
+
+// Columna de Avatar y Acciones (más pequeñas)
+.mat-column-avatar {
+  width: 70px;
+}
+.mat-column-actions {
+  width: 200px;
+  text-align: right;
+}
+
+/* Colores para la tarjeta de la lista de usuarios */
+.card-outline-color {
+  padding: 1rem;
+  @include mat.card-overrides(
+    (
+      outlined-outline-color: #f59e0b,
+      outlined-container-color: #ffffff,
+    )
+  );
+}
+
+.boton-eliminar {
+  color: #ba1a1a;
+}
+
+.boton-editar {
+  color: #7d5725;
+}
+
+.boton-ver-detalles {
+  color: #7d5725;
+}
+

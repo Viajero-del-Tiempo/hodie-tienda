@@ -1,0 +1,257 @@
+<div class="checkout-container">
+  @if (isLoading) {
+  <div class="loading-shade">
+    <mat-spinner></mat-spinner>
+  </div>
+  } @else { @if (user && (cart$ | async); as cart) {
+  <!-- Título de la página -->
+  <header class="checkout-header">
+    <h1>Finalizar Compra</h1>
+    <p>Revisa tu pedido y completa los datos para finalizar la compra.</p>
+  </header>
+
+  <div class="checkout-layout">
+    <!-- Columna izquierda: Formulario o Detalles del pedido -->
+    <div class="checkout-main">
+      <!--
+            * SECCIÓN PARA COMPLETAR PERFIL
+            * Se muestra si el perfil del usuario está incompleto.
+          -->
+      @if (user.profile_status === 'incomplete' || isEditingProfile) {
+      <mat-card class="form-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>person</mat-icon>
+            Completa tu Perfil
+          </mat-card-title>
+          <mat-card-subtitle>Necesitamos tus datos de envío para continuar.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="addressForm" (ngSubmit)="saveProfile()">
+            <p class="form-description">
+              Esta información se guardará en tu perfil para futuras compras.
+            </p>
+            <div class="form-grid">
+              <mat-form-field appearance="outline" class="full-width" style="grid-column: 1 / -1">
+                <mat-label>Nombre y Apellido</mat-label>
+                <input matInput formControlName="displayName" placeholder="Ej: Juan Pérez" />
+                @if (addressForm.get('displayName')?.hasError('required')) {
+                <mat-error> El nombre es obligatorio. </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Dirección (Calle y número)</mat-label>
+                <input matInput formControlName="street" placeholder="Ej: Av. Principal 123" />
+                @if (addressForm.get('street')?.hasError('required')) {
+                <mat-error> La dirección es obligatoria. </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Ciudad</mat-label>
+                <input matInput formControlName="city" placeholder="Ej: Asunción" />
+                @if (addressForm.get('city')?.hasError('required')) {
+                <mat-error> La ciudad es obligatoria. </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Departamento</mat-label>
+                <input matInput formControlName="department" placeholder="Ej: Central" />
+                @if (addressForm.get('department')?.hasError('required')) {
+                <mat-error> El departamento es obligatorio. </mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Instrucciones de entrega (Opcional)</mat-label>
+              <textarea
+                matInput
+                formControlName="instructions"
+                placeholder="Ej: Dejar en portería, llamar al llegar."
+                rows="3"
+              ></textarea>
+            </mat-form-field>
+
+            <div class="billing-section">
+              <mat-checkbox
+                [checked]="sameAsShipping"
+                (change)="toggleBillingAddress($event.checked)"
+                color="primary"
+              >
+                La dirección de facturación es la misma que la de envío
+              </mat-checkbox>
+            </div>
+
+            @if (!sameAsShipping) {
+            <div class="billing-form" [formGroup]="billingAddressForm">
+              <h4>Dirección de Facturación</h4>
+              <div class="form-grid">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Dirección (Calle y número)</mat-label>
+                  <input matInput formControlName="street" placeholder="Ej: Av. Principal 123" />
+                  @if (billingAddressForm.get('street')?.hasError('required')) {
+                  <mat-error> La dirección es obligatoria. </mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Ciudad</mat-label>
+                  <input matInput formControlName="city" placeholder="Ej: Asunción" />
+                  @if (billingAddressForm.get('city')?.hasError('required')) {
+                  <mat-error> La ciudad es obligatoria. </mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Departamento</mat-label>
+                  <input matInput formControlName="department" placeholder="Ej: Central" />
+                  @if (billingAddressForm.get('department')?.hasError('required')) {
+                  <mat-error> El departamento es obligatorio. </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+            }
+
+            <div class="form-actions">
+              @if (isEditingProfile) {
+              <button
+                mat-button
+                type="button"
+                (click)="cancelEdit()"
+                [disabled]="isSaving"
+                style="margin-right: 8px"
+              >
+                Cancelar
+              </button>
+              }
+              <button
+                mat-raised-button
+                color="primary"
+                type="submit"
+                [disabled]="addressForm.invalid || isSaving"
+                class="full-width"
+              >
+                @if (!isSaving) {
+                <span>Guardar y Continuar</span>
+                } @else {
+                <span>Guardando...</span>
+                }
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+      } @else {
+      <!-- Detalles de Envío -->
+      <mat-card class="info-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>local_shipping</mat-icon>
+            Dirección de Envío
+          </mat-card-title>
+        </mat-card-header>
+        @if (user.addresses && user.addresses[0]; as address) {
+        <mat-card-content>
+          <div class="address-details">
+            <p class="address-text">
+              <strong>{{ address.street }}, {{ address.city }}</strong
+              ><br />
+              {{ address.department }}
+            </p>
+            @if (address.instructions) {
+            <p class="address-instructions">
+              <em>Instrucciones: {{ address.instructions }}</em>
+            </p>
+            }
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button matButton="outlined" (click)="editProfile()">Cambiar dirección</button>
+        </mat-card-actions>
+        }
+      </mat-card>
+
+      <!-- Método de Pago -->
+      <mat-card class="info-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>payment</mat-icon>
+            Método de Pago
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="payment-method">
+            <h4>Transferencia Bancaria</h4>
+            <p class="payment-instructions">
+              Una vez finalizada la compra, recibirás los datos de la cuenta bancaria por WhatsApp
+              para realizar la transferencia.
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      }
+    </div>
+
+    <!-- Columna derecha: Resumen del Carrito -->
+    <aside class="checkout-sidebar">
+      <mat-card class="summary-card" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>shopping_cart</mat-icon>
+            Resumen del Pedido
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list>
+            @for (item of cart.items; track item.itemId) {
+            <mat-list-item>
+              <span matListItemTitle>{{ item.product.name }} ({{ item.quantity }}x)</span>
+              <span matListItemLine class="item-details">
+                @if (item.selectedPackaging) {
+                <small>Empaque: {{ item.selectedPackaging.type }}</small>
+                }
+              </span>
+              <span matListItemMeta class="item-price">{{
+                item.unitPrice * item.quantity | guarani
+              }}</span>
+            </mat-list-item>
+            } @empty {
+            <p class="empty-cart-message">Tu carrito está vacío.</p>
+            }
+          </mat-list>
+
+          <mat-divider></mat-divider>
+
+          <div class="summary-totals">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <strong>{{ cart.subtotal | guarani }}</strong>
+            </div>
+            <div class="summary-row">
+              <span>Envío</span>
+              <strong>Pago contra entrega</strong>
+            </div>
+            <div class="summary-row grand-total">
+              <span>Total</span>
+              <strong>{{ cart.subtotal | guarani }}</strong>
+            </div>
+          </div>
+        </mat-card-content>
+
+        @if (user.profile_status === 'complete' && cart.items.length > 0) {
+        <mat-card-actions>
+          <button matButton="filled" matIconSuffix class="full-width" (click)="placeOrder(cart)">
+            <mat-icon>check_circle</mat-icon>
+            Confirmar Pedido
+          </button>
+        </mat-card-actions>
+        }
+      </mat-card>
+    </aside>
+  </div>
+  } }
+</div>

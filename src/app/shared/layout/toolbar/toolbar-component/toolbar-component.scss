@@ -1,0 +1,121 @@
+/* Estilos Estructurales para Toolbar (Sin Colores) */
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+  // (Aquí definirías tu 'z-index' y 'box-shadow'
+  // si quisieras un toolbar "sticky")
+}
+
+.main-toolbar {
+  @include mat.toolbar-overrides(
+    (
+      // Aquí puedes agregar estilos específicos para el toolbar
+      container-background-color: #171717,
+      container-text-color: #ffffff
+    )
+  );
+
+  display: flex;
+  align-items: center;
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  gap: 0.5rem;
+
+  // breakpoint sm (>=640px)
+  @media (min-width: 640px) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  // breakpoint lg (>=1024px)
+  @media (min-width: 1024px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.toolbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+// --- NUEVAS CLASES PARA LOGOS (AÑADIDAS) ---
+.logo-image {
+  height: 100%; // Las imágenes ocupan el 100% de la altura (controlada por el padding)
+  width: auto;
+}
+
+.logo-icon {
+  height: 3.25rem; // Ajusta el tamaño del icono según sea necesario
+}
+
+.logo-text {
+  height: 2.25rem; // Ajusta el tamaño del texto según sea necesario
+
+  // Oculta el logo de texto en pantallas pequeñas
+  @media (max-width: 400px) {
+    display: none;
+  }
+}
+// --- FIN NUEVAS CLASES ---
+
+// Navegación de Escritorio
+.desktop-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+// Espaciador
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+// Iconos de Acción (derecha)
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.navigation-button {
+  @include mat.button-overrides(
+    (
+      text-label-text-size: 1rem,
+      text-container-shape: 0px,
+      text-horizontal-padding: 12px,
+    )
+  );
+}
+
+.active-link {
+    text-decoration-line: underline;
+    text-decoration-color: #f59e0b;
+    text-decoration-thickness: 2px;
+    text-decoration-style: solid;
+    text-underline-offset: 14px;
+    
+  @include mat.toolbar-overrides(
+    (
+      container-text-color: #f59e0b,
+      // Ejemplo de color ámbar-500
+    )
+  );
+}
+
+.navigation-icon-button {
+  @include mat.icon-button-overrides(
+    (
+      // Aquí puedes agregar estilos específicos para los botones de icono
+      icon-color: #ffffff
+    )
+  );
+}
+

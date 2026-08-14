@@ -1,0 +1,117 @@
+<!-- 
+  El layout está basado en un CSS Grid de 4 columnas.
+  (Esta estructura no cambia)
+-->
+<div class="dashboard-container">
+  <mat-list>
+    <mat-list-item>
+      <mat-icon matListItemIcon>calendar_today</mat-icon>
+      <span matListItemTitle>{{
+        now.toLocaleDateString('es-ES', { month: 'long' }) | uppercase
+      }}</span>
+    </mat-list-item>
+  </mat-list>
+  <!-- Fila 1: KPIs (Indicadores Clave) -->
+  <div class="dashboard-grid kpi-row">
+    <mat-card class="kpi-card grid-col-span-1 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Ventas Totales</mat-card-title>
+        <mat-icon mat-card-avatar>monetization_on</mat-icon>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- CAMBIO: 'USD' a 'PYG' y formato sin decimales -->
+        <p class="kpi-value">{{ totalSales | guarani }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="kpi-card grid-col-span-1 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Pedidos Totales</mat-card-title>
+        <mat-icon mat-card-avatar>shopping_cart</mat-icon>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="kpi-value">{{ totalOrders }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="kpi-card grid-col-span-1 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Clientes Nuevos</mat-card-title>
+        <mat-icon mat-card-avatar>person_add</mat-icon>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="kpi-value">{{ newCustomers }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="kpi-card grid-col-span-1 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Pedidos Pendientes</mat-card-title>
+        <mat-icon mat-card-avatar>pending_actions</mat-icon>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="kpi-value">{{ pendingOrders }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Fila 2: Gráficos Principales -->
+  <div class="dashboard-grid chart-row">
+    <!-- Gráfico de Línea: Ventas (REEMPLAZADO) -->
+    <mat-card class="chart-card grid-col-span-3 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Resumen de Ventas</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="chart-container">
+        <!-- Contenedor para ApexCharts -->
+        <div #salesChartContainer></div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Gráfico de Dona: Estado de Pedidos (REEMPLAZADO) -->
+    <mat-card class="chart-card grid-col-span-1 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Estado de Pedidos</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="chart-container">
+        <!-- Contenedor para ApexCharts -->
+        <div #statusChartContainer></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Fila 3: Listas y Actividad -->
+  <div class="dashboard-grid activity-row">
+    <!-- Lista: Pedidos Recientes -->
+    <mat-card class="activity-card grid-col-span-4 card-outline-color" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Pedidos Recientes</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <!-- 
+            CAMBIO: Reemplazamos <ng-container *ngFor... por el bloque @for.
+            Usamos 'track order.id' que es obligatorio y mejora el rendimiento.
+          -->
+          @for (order of recentOrders; track order.id) {
+          <mat-list-item>
+            <mat-icon matListItemIcon>receipt_long</mat-icon>
+            <span matListItemTitle class="order-title">Orden #{{ order.orderNumber }}</span>
+            <span matListItemLine class="order-customer">{{ order.userDisplayName }}</span>
+
+            <!-- Contenido al final de la línea -->
+            <div class="order-meta" matListItemMeta>
+              <span class="order-status status-{{ order.status | lowercase }}">{{
+                order.status | statusLabel
+              }}</span>
+              <!-- CAMBIO: 'USD' a 'PYG' y formato sin decimales -->
+              <span class="order-total">{{ order.total | guarani }}</span>
+            </div>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          }
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+.quantity-input-container {
+  display: flex;
+  max-width: 200px;
+  align-items: center;
+  border: 2px solid #7d5725;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.quantity-input {
+  width: 100%;
+  text-align: center;
+  border: none;
+  background-color: transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  appearance: textfield;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+

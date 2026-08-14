@@ -1,0 +1,56 @@
+<div class="store-container section-padding">
+  <h1 class="section-title">Nuestra Tienda</h1>
+
+  <div class="store-grid">
+    <!-- Contenido Principal (Lista de Productos) -->
+    <main class="product-list-content">
+      <!-- Barra de Herramientas con Filtro y Ordenamiento -->
+      <div class="list-toolbar">
+        <!-- Filtro de Búsqueda -->
+        <mat-form-field class="filter-search" appearance="outline">
+          <mat-label>Buscar producto...</mat-label>
+          <input matInput (keyup)="applyTextFilter($event)" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <span class="toolbar-spacer"></span>
+
+        <!-- Select de Ordenamiento -->
+        <mat-form-field class="sort-select" appearance="outline">
+          <mat-label>Ordenar por</mat-label>
+          <mat-select (selectionChange)="applySort($event)" value="default">
+            <mat-option value="default">Defecto</mat-option>
+            <mat-option value="price-asc">Precio: Menor a Mayor</mat-option>
+            <mat-option value="price-desc">Precio: Mayor a Menor</mat-option>
+            <mat-option value="name-asc">Nombre: A-Z</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Cuadrícula de Productos -->
+      <div class="product-grid">
+        @for (product of paginatedProducts; track product.id) {
+        <app-product-card
+          [product]="product"
+          [showAddToCartButton]="false"
+        ></app-product-card>
+        } @empty {
+        <p class="no-results">
+          No se encontraron productos que coincidan con tus filtros.
+        </p>
+        }
+      </div>
+
+      <!-- Paginador -->
+      <mat-paginator
+        [length]="dataSource.data.length"
+        [pageSize]="12"
+        [pageSizeOptions]="[12, 24, 48]"
+        (page)="onPageChange($event)"
+        class="product-list-paginator"
+      >
+      </mat-paginator>
+    </main>
+  </div>
+</div>
+

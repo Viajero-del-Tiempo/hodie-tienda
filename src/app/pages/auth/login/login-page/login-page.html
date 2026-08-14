@@ -1,0 +1,74 @@
+<div class="login-container">
+  <mat-card class="login-card" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Iniciar Sesión con WhatsApp</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+      }
+      <form [formGroup]="loginForm">
+        @if (!codeSent) {
+        <div>
+          <mat-form-field appearance="outline">
+            <mat-label>Número de Teléfono</mat-label>
+            <input
+              matInput
+              formControlName="phone"
+              placeholder="Ej: 0981123456"
+              type="tel"
+            />
+            @if (loginForm.get('phone')?.hasError('required')) {
+            <mat-error> El teléfono es requerido. </mat-error>
+            } @if (loginForm.get('phone')?.hasError('pattern')) {
+            <mat-error> Formato incorrecto. Ej: 0981123456 </mat-error>
+            }
+          </mat-form-field>
+        </div>
+        } @if (codeSent) {
+        <div>
+          <mat-form-field appearance="outline">
+            <mat-label>Código de Verificación</mat-label>
+            <input matInput formControlName="code" type="text" />
+            @if (loginForm.get('code')?.hasError('required')) {
+            <mat-error> El código es requerido. </mat-error>
+            }
+          </mat-form-field>
+        </div>
+        }
+      </form>
+    </mat-card-content>
+    <mat-card-actions>
+      @if (!isLoading) {
+      <div>
+        @if (!codeSent) {
+        <button
+          matButton="elevated"
+          (click)="requestWhatsappCode()"
+          [disabled]="loginForm.get('phone')?.invalid"
+        >
+          Enviar Código
+        </button>
+        } @if (codeSent) {
+        <button
+          matButton="elevated"
+          (click)="verifyWhatsappCode()"
+          [disabled]="loginForm.invalid"
+        >
+          Verificar e Iniciar Sesión
+        </button>
+        }
+      </div>
+      } @if (isLoading) {
+      <div class="spinner-container">
+        <mat-progress-spinner
+          mode="indeterminate"
+          diameter="35"
+        ></mat-progress-spinner>
+      </div>
+      }
+    </mat-card-actions>
+  </mat-card>
+</div>

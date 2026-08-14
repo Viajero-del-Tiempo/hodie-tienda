@@ -1,0 +1,67 @@
+<mat-toolbar class="main-toolbar">
+  <!-- 1. Botón Menú Móvil (Hamburguesa) -->
+  <!-- Se muestra solo si 'isMobile' es true -->
+  @if (isMobile) {
+  <button matIconButton class="navigation-icon-button" (click)="toggleSidenav.emit()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  }
+
+  <!-- 2. Logo -->
+  <a routerLink="/" class="toolbar-logo">
+    <!-- 
+      Rutas de ejemplo. 
+      Asegúrate de que existan en 'assets/images/'.
+    -->
+    <img
+      src="assets/images/logo-icon.png"
+      alt="HoDie Icono"
+      class="logo-image logo-icon"
+      onerror="this.style.display='none'"
+    />
+    <img
+      src="assets/images/logo-text.png"
+      alt="HoDie Tienda"
+      class="logo-image logo-text"
+      onerror="this.style.display='none'"
+    />
+  </a>
+
+  <!-- 3. Navegación Desktop -->
+  <!-- (SE MOVIÓ DESPUÉS DEL SPACER) -->
+
+  <!-- Espaciador (empuja iconos a la derecha) -->
+  <span class="toolbar-spacer"></span>
+
+  <!-- 3. Navegación Desktop (AHORA AQUÍ) -->
+  <!-- Se muestra solo si 'isMobile' es false -->
+  @if (!isMobile) {
+  <nav class="desktop-nav">
+    @for (link of links; track link.path) {
+    <a
+      matButton
+      [routerLink]="link.path"
+      routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="navigation-button"
+    >
+      {{ link.label }}
+    </a>
+    }
+  </nav>
+  }
+
+  <!-- 4. Acciones (Carrito, Usuario) -->
+  <div class="toolbar-actions">
+    <button class="navigation-icon-button" matIconButton matTooltip="Carrito" routerLink="/cart">
+      <!-- El badge se puede ocultar si el conteo es 0 -->
+      <mat-icon
+        [matBadge]="cartCount"
+        [matBadgeHidden]="cartCount === 0"
+        matBadgeOverlap="false"
+        aria-hidden="false"
+        >shopping_cart</mat-icon
+      >
+    </button>
+  </div>
+</mat-toolbar>

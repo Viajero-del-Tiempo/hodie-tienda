@@ -1,0 +1,94 @@
+/* Estilos Estructurales para MainLayout (Sin Colores) */
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+/* 1. Contenedor General */
+.main-layout-container {
+  // Ocupa toda la altura de la ventana
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 2. Sidenav (Menú Móvil) */
+.main-sidenav {
+  // Ancho deseado para la barra lateral en modo 'side'
+  width: 200px;
+  // Transición para cuando se colapse
+  transition: width 0.3s ease;
+  // Nota: position, height, top, z-index son manejados
+  // por <mat-sidenav>
+  background-color: #ffffff;
+  // (Aquí aplicarías tu 'border-right')
+  border-right: 1px solid #f59e0b; // Ejemplo de color ámbar-500
+}
+
+// Espaciado para la lista de navegación
+mat-nav-list {
+  padding-top: 1rem;
+}
+
+// Estilos para los items de navegación
+a[mat-list-item] {
+  // Asegura que el texto no se parta al colapsar
+  span[matListItemTitle] {
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.2s ease, width 0.2s ease;
+  }
+
+  // La clase 'active-link' (de routerLinkActive)
+  // se usará para los estilos de color de "activo".
+  &.active-link {
+    // Estilos de color se manejarán en otro archivo SCSS
+    text-decoration-line: underline; /* qué (underline, overline, line-through) */
+    text-decoration-color: #f59e0b; /* color del subrayado */
+    text-decoration-thickness: 2px; /* grosor */
+    text-decoration-style: solid; /* solid | double | dotted | dashed | wavy */
+    text-underline-offset: 3px;
+  }
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  min-height: 64px; // Misma altura que el toolbar
+  box-sizing: border-box;
+
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+/* 3. Contenido Principal (derecha) */
+.main-layout-content {
+  // Esta es la clave del "Sticky Footer"
+  display: flex;
+  flex-direction: column;
+}
+
+/* 4. Router Outlet (Contenido de página) */
+.main-router-content {
+  // Ocupa todo el espacio disponible, empujando el footer hacia abajo
+  flex: 1;
+  // Eliminamos padding global para permitir secciones full-width (Hero)
+  padding: 0;
+}
+
+.botones-navegacion {
+  // Personaliza el indicador activo de Angular Material
+  @include mat.list-overrides(
+    (
+      list-item-hover-state-layer-color: #f59e0b,
+      list-item-focus-state-layer-color: #f59e0b,
+    )
+  );
+}

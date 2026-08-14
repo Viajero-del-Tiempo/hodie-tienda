@@ -1,0 +1,116 @@
+@if (cart$ | async; as cart) {
+<div class="cart-container">
+  <header class="cart-header">
+    <button matButton="outlined" [routerLink]="['/store']" matTooltip="Seguir comprando">
+      <mat-icon>arrow_back</mat-icon>
+      Seguir Comprando
+    </button>
+    <h1 class="section-title">Tu Carrito de Compras</h1>
+  </header>
+
+  @if (cart.items.length > 0) {
+  <div class="cart-grid">
+    <div class="cart-items">
+      <div class="items-header">
+        <h2>Artículos ({{ cart.totalItems }})</h2>
+        <button matButton="elevated" (click)="clearCart()">
+          <mat-icon>remove_shopping_cart</mat-icon>
+          Vaciar Carrito
+        </button>
+      </div>
+
+      @for (item of cart.items; track item.itemId; let last = $last) {
+      <div class="cart-item">
+        <img
+          [src]="item.product.imageUrls?.[0] || 'https://placehold.co/80x80/f0f0f0/a0a0a0?text=Hodie'"
+          alt="{{ item.product.name }}"
+          class="cart-item-image"
+        />
+
+        <div class="item-info">
+          <div class="item-details">
+            <span class="item-name">{{ item.product.name }}</span>
+            <span class="item-price">{{ item.unitPrice | guarani }} / unidad</span>
+            @if (item.selectedPackaging) {
+            <div class="item-packaging">
+              <img
+                [src]="item.selectedPackaging.imageUrl"
+                alt="{{ item.selectedPackaging.name }}"
+                class="packaging-image"
+              />
+              <span>{{ item.selectedPackaging.name }}</span>
+            </div>
+            }
+          </div>
+
+          <div class="item-controls">
+            <app-quantity-input
+              [initialQuantity]="item.quantity"
+              [maxQuantity]="item.product.stock"
+              (quantityChange)="onQuantityChange(item, $event)"
+            ></app-quantity-input>
+          </div>
+
+          <div class="item-total">
+            <span>{{ item.unitPrice * item.quantity | guarani }}</span>
+            <button
+              matIconButton
+              (click)="removeItem(item.itemId)"
+              matTooltip="Eliminar artículo"
+              class="boton-eliminar-articulo"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      @if(!last) {
+      <mat-divider></mat-divider>
+      } }
+    </div>
+
+    <div class="order-summary">
+      <mat-card appearance="outlined" class="summary-card">
+        <mat-card-header>
+          <mat-card-title>Resumen del Pedido</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span class="summary-subtotal">{{ cart.subtotal | guarani }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Envío</span>
+            <span class="summary-row">Pago contra entrega</span>
+          </div>
+          <mat-divider></mat-divider>
+          <div class="summary-total">
+            <h3>Total</h3>
+            <h1 class="summary-value">{{ cart.subtotal | guarani }}</h1>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button
+            matIconSuffix
+            matButton="filled"
+            color="primary"
+            class="checkout-button"
+            [routerLink]="['/checkout']"
+          >
+            <mat-icon>shopping_cart_checkout</mat-icon>
+            Finalizar compra
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+  } @else {
+  <div class="empty-cart">
+    <mat-icon class="empty-cart-icon">shopping_cart_off</mat-icon>
+    <h2>Tu carrito está vacío</h2>
+    <p>Añade productos para verlos aquí.</p>
+    <button matButton="elevated" [routerLink]="['/store']">Ir a la Tienda</button>
+  </div>
+  }
+</div>
+}

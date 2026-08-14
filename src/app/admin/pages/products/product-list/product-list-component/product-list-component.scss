@@ -1,0 +1,89 @@
+/* Estilos Estructurales para ProductList (Sin Colores) */
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.list-container {
+  padding: 1.5rem; // Espaciado general
+}
+
+.list-card {
+  padding: 1rem; // Espaciado interno
+  @include mat.card-overrides(
+    (
+      outlined-outline-color: #f59e0b,
+      outlined-container-color: #ffffff,
+    )
+  );
+}
+
+/* Cabecera de la tarjeta (Título y Botón) */
+.list-header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 1rem;
+
+  .header-spacer {
+    flex: 1 1 auto; // Empuja el botón a la derecha
+  }
+}
+
+.filter-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.product-table {
+  width: 100%;
+  background-color: transparent; // Sin fondo
+}
+
+// Estilos de la imagen en la tabla
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px; // Bordes redondeados
+  // (Aquí podrías añadir un borde)
+}
+
+// Fila de "No hay datos"
+.mat-row-no-data {
+  text-align: center;
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+// Espaciado de celdas
+.mat-mdc-cell, .mat-mdc-header-cell {
+  padding: 0 0.75rem;
+}
+
+// Columna de Imagen y Acciones (más pequeñas)
+.mat-column-image {
+  width: 80px;
+}
+
+.mat-column-actions {
+  width: 200px;
+  text-align: right;
+}
+
+.boton-ver-detalles {
+  color: #7d5725;
+}
+
+.boton-eliminar {
+  color: #ba1a1a;
+}
+
+.boton-editar {
+  color: #7d5725;
+}

@@ -1,0 +1,75 @@
+<!-- 
+  Este es el contenedor principal del layout público.
+  Usa 'flex-direction: column' (desde el SCSS) para 
+  implementar un "sticky footer".
+-->
+<mat-sidenav-container class="main-layout-container">
+
+  <!-- 1. Sidenav (Menú lateral para Móvil) -->
+  <!-- 
+    - Se controla con la variable 'sidenav' (ViewChild).
+    - 'mode' y 'opened' se manejan desde el TS.
+  -->
+  <mat-sidenav 
+    #sidenav 
+    [mode]="'over'"
+    [opened]="false"
+    class="main-sidenav">
+    
+    <!-- Título del menú móvil -->
+    <div class="mobile-menu-header">
+      <h3>Menú</h3>
+      <button mat-icon-button (click)="sidenav.close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- 
+      Contenido del Sidenav (navegación móvil).
+      (Aquí replicarías los enlaces del Toolbar) 
+    -->
+    <mat-nav-list (click)="sidenav.close()" class="botones-navegacion">
+      <a mat-list-item routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon matListItemIcon>home</mat-icon>
+        <span matListItemTitle>Inicio</span>
+      </a>
+      <a mat-list-item routerLink="/store" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>store</mat-icon>
+        <span matListItemTitle>Tienda</span>
+      </a>
+      <a mat-list-item routerLink="/services" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>home_repair_service</mat-icon>
+        <span matListItemTitle>Servicios</span>
+      </a>
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <!-- 2. Contenido Principal (Derecha) -->
+  <mat-sidenav-content class="main-layout-content">
+
+    <!-- 
+      2a. Toolbar (Cabecera)
+      - Le pasamos el estado 'isMobile'.
+      - Escuchamos el evento '(toggleSidenav)' para abrir/cerrar.
+    -->
+    <app-toolbar
+      [isMobile]="(isMobile$ | async) ?? false"
+      (toggleSidenav)="sidenav.toggle()">
+    </app-toolbar>
+
+    <!-- 
+      2b. Contenido de la Página (Rutas)
+      - 'flex: 1' (desde SCSS) empuja el footer hacia abajo.
+    -->
+    <main class="main-router-content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- 2c. Footer (Pie de página) -->
+    <app-footer></app-footer>
+    
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
+

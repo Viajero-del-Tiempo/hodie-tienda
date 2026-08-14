@@ -1,0 +1,45 @@
+@use '@angular/material' as mat;
+:host {
+  display: block;
+  height: 100%;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 420px; // Altura fija para la tarjeta
+  
+  .product-card-image {
+    height: 250px; // Altura fija para la imagen
+    width: 100%;
+    object-fit: contain;
+  }
+
+  mat-card-content {
+    flex-grow: 1; // El contenido crece para empujar las acciones hacia abajo
+    padding: 8px;
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    .product-price {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f59e0b;
+    }
+  }
+
+  mat-card-actions {
+    padding: 16px;
+  }
+}
+
+.card-outline-color {
+   @include mat.card-overrides(
+    (
+      outlined-outline-color: #f59e0b,
+      outlined-container-color: #ffffff,
+    )
+  );
+}

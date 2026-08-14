@@ -1,0 +1,66 @@
+<!-- 
+  Estructura de la página de inicio reimaginada 
+  para E-Commerce, basada en la imagen de referencia.
+-->
+<div class="homepage-container">
+  <!-- 1. Hero Section -->
+  <section class="hero-section">
+    <!-- Contenido de Texto -->
+    <div class="hero-content">
+      <h1 class="hero-title">Elegí, Envolvé y Sorprendé</h1>
+      <p class="hero-subtitle">Regalos únicos para personas únicas</p>
+      <button matButton="filled" class="hero-cta" routerLink="/store">COMPRAR AHORA</button>
+    </div>
+
+    <!-- Imagen Principal (La caja de regalo) -->
+    <div class="hero-image-container">
+      <img src="assets/images/Imagen1.png" alt="Caja de regalo HoDie" class="hero-image" />
+    </div>
+  </section>
+
+  <!-- 2. Productos Destacados ("Most Popular") -->
+  <section class="featured-section section-padding">
+    <h2 class="section-title">Los Más Populares</h2>
+
+    <!-- Contenedor del Carrusel Swiper -->
+    <div class="featured-carousel-container">
+      <swiper-container
+        slides-per-view="2"
+        space-between="20"
+        loop="true"
+        autoplay-delay="3000"
+        autoplay-disable-on-interaction="false"
+        breakpoints='{"600": {"slidesPerView": 4}, "960": {"slidesPerView": 6}}'
+      >
+        @for (product of featuredProducts; track product.id) {
+        <swiper-slide>
+          <app-product-card [product]="product"></app-product-card>
+        </swiper-slide>
+        }
+      </swiper-container>
+    </div>
+    <div class="ver-mas-button-container">
+      <button matButton="outlined" class="ver-mas-button" routerLink="/store">VER MÁS</button>
+    </div>
+  </section>
+
+  <!-- 3. Propuestas de Valor -->
+  <section class="values-section section-padding">
+    <div class="values-grid">
+      @for (value of valueProps; track value.title) {
+      <div class="value-item">
+        <mat-icon class="value-icon">{{ value.icon }}</mat-icon>
+        <h3>{{ value.title }}</h3>
+        <p>{{ value.description }}</p>
+      </div>
+      }
+    </div>
+  </section>
+
+  <!-- 4. Final CTA Section -->
+  <section class="cta-section section-padding">
+    <h2 class="cta-title">Explora la colección completa</h2>
+    <p>Encuentra el regalo perfecto para cada ocasión.</p>
+    <button matButton="filled" routerLink="/store">IR A LA TIENDA</button>
+  </section>
+</div>

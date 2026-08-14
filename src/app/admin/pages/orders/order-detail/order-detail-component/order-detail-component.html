@@ -1,0 +1,148 @@
+<div class="detail-container">
+  @if (order) {
+  <!-- 1. Cabecera (Volver, Título, Acciones) -->
+  <header class="detail-header">
+    <button mat-icon-button (click)="goBack()" matTooltip="Volver a la lista">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <div class="header-title">
+      <h1>Pedido #{{ order.orderNumber }}</h1>
+      <span class="order-status-pill status-{{ order.status | lowercase  }}">
+        {{ order.status | statusLabel }}
+      </span>
+    </div>
+
+    <span class="header-spacer"></span>
+
+    <!-- Acción: Cambiar Estado -->
+    <mat-form-field class="status-form" appearance="outline">
+      <mat-label>Cambiar Estado</mat-label>
+      <mat-select [value]="selectedStatus" (selectionChange)="selectedStatus = $event.value">
+        @for(status of orderStatuses; track status) {
+        <mat-option [value]="status">{{ status | statusLabel }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <button matButton="elevated" (click)="updateStatus()" class="update-button">
+      <mat-icon>update</mat-icon>
+      Actualizar
+    </button>
+  </header>
+
+  <!-- 2. Contenido (Grid de 2 columnas) -->
+  <div class="detail-grid">
+    <!-- Columna Izquierda (Info Cliente y Envío) -->
+    <div class="grid-col-span-2">
+      <!-- Tarjeta: Cliente -->
+      <mat-card class="detail-card card-outline-color" appearance="outlined">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>account_circle</mat-icon>
+          <mat-card-title>Datos del Cliente</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list role="list">
+            <mat-list-item role="listitem">
+              <span matListItemTitle>{{ order.userDisplayName }}</span>
+              <span matListItemLine>Nombre</span>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+            <mat-list-item role="listitem">
+              <span matListItemTitle>{{ order.userPhoneNumber }}</span>
+              <span matListItemLine>Teléfono</span>
+            </mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Tarjeta: Envío -->
+      <mat-card class="detail-card card-outline-color" appearance="outlined">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>local_shipping</mat-icon>
+          <mat-card-title>Dirección de Envío</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="shipping-address">
+            {{ order.shippingAddress.street }} <br />
+            {{ order.shippingAddress.city }}, {{ order.shippingAddress.department }} <br />
+            {{ order.shippingAddress.postalCode }} <br />
+            Paraguay
+          </p>
+          @if (order.shippingAddress.instructions) {
+          <p class="shipping-instructions">
+            <strong>Instrucciones:</strong> {{ order.shippingAddress.instructions }}
+          </p>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Columna Derecha (Productos y Resumen) -->
+    <div class="grid-col-span-1">
+      <!-- Tarjeta: Productos -->
+      <mat-card class="detail-card card-outline-color" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Productos del Pedido</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list role="list" class="product-list">
+            @for(item of order.items; track item.productId) {
+            <mat-list-item role="listitem" class="product-item">
+              <span matListItemTitle>{{ item.productName }}</span>
+              <span matListItemLine>Código: {{ item.productSku }}</span>
+              <span matListItemLine> {{ item.quantity }} x {{ item.price | guarani }} </span>
+
+              <!-- Detalles de Empaque -->
+              @if (item.selectedPackaging) {
+              <span matListItemLine class="packaging-info">
+                <mat-icon class="packaging-icon">card_giftcard</mat-icon>
+                {{ item.selectedPackaging.name }}
+                @if (item.selectedPackaging.price > 0) { (+{{
+                  item.selectedPackaging.price | guarani
+                }}) } @else { (Gratis) }
+              </span>
+              } @else {
+              <span matListItemLine class="packaging-info text-muted">Sin empaque especial</span>
+              }
+            </mat-list-item>
+            <mat-divider></mat-divider>
+            }
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Tarjeta: Resumen de Pago -->
+      <mat-card class="detail-card card-outline-color" appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Resumen de Pago</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item class="product-item">
+              <span matListItemTitle>Subtotal</span>
+              <span matListItemMeta class="product-meta">{{ order.subtotal | guarani }}</span>
+            </mat-list-item>
+            <mat-list-item class="product-item">
+              <span matListItemTitle>Envío</span>
+              <span matListItemMeta class="product-meta">{{ order.shippingCost | guarani }}</span>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+            <mat-list-item class="product-item">
+              <span matListItemTitle>Total</span>
+              <span
+                matListItemMeta
+                class="product-total total-color-{{ order.status | lowercase }}"
+                >{{ order.total | guarani }}</span
+              >
+            </mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+  } @else {
+  <div class="loading-container">
+    <p>Cargando pedido...</p>
+  </div>
+  }
+</div>

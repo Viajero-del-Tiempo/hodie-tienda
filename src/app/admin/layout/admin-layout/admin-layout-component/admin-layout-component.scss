@@ -1,0 +1,178 @@
+/* Estilos Estructurales para Admin Layout (con Angular Material)
+  (Sin propiedades de color)
+*/
+@use '@angular/material' as mat;
+// --- Contenedor Principal ---
+
+.admin-container {
+  // Establece la altura total para el layout
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f5f5f5;
+}
+
+// --- Barra Lateral (Sidenav) ---
+
+.admin-sidenav {
+  // Ancho deseado para la barra lateral en modo 'side'
+  width: 200px;
+  // Transición para cuando se colapse
+  transition: width 0.3s ease;
+  // Nota: position, height, top, z-index son manejados
+  // por <mat-sidenav>
+  background-color: #ffffff;
+}
+
+// Contenido interno de la barra lateral
+.admin-logo-container {
+  // Alinea la altura del logo con la barra de herramientas
+  height: 64px; // Altura estándar de mat-toolbar
+  display: flex;
+  padding: 0 1rem;
+  align-items: center;
+  box-sizing: border-box; // Asegura que el padding no sume a la altura
+}
+
+.admin-logo-image {
+  height: 25px; // Ajusta según el tamaño deseado del logo
+  padding-bottom: 0.3rem;
+}
+
+.admin-logo-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  color: #f59e0b;
+  white-space: nowrap; // Evita que el texto se parta
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.admin-collapse-button {
+  margin-right: 0.5rem;
+}
+
+// Espaciado para la lista de navegación
+mat-nav-list {
+  padding-top: 1rem;
+}
+
+// Estilos para los items de navegación
+a[mat-list-item] {
+  // Asegura que el texto no se parta al colapsar
+  span[matListItemTitle] {
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.2s ease, width 0.2s ease;
+  }
+
+  // La clase 'active-link' (de routerLinkActive)
+  // se usará para los estilos de color de "activo".
+  &.active-link {
+    // Estilos de color se manejarán en otro archivo SCSS
+    text-decoration-line: underline; /* qué (underline, overline, line-through) */
+    text-decoration-color: #f59e0b; /* color del subrayado */
+    text-decoration-thickness: 2px; /* grosor */
+    text-decoration-style: solid; /* solid | double | dotted | dashed | wavy */
+    text-underline-offset: 3px;
+  }
+}
+
+// --- Contenido Principal ---
+
+.admin-content {
+  // Es el <mat-sidenav-content>
+  // Organiza el contenido (toolbar + wrapper) verticalmente
+  display: flex;
+  flex-direction: column;
+}
+
+// --- Cabecera (Toolbar) ---
+
+.admin-toolbar {
+  // Fija la barra de herramientas en la parte superior
+  // del área de contenido
+  position: sticky;
+  top: 0;
+  z-index: 40;
+
+  // Añade justificación para espaciar
+  // el título y el botón de logout (ejemplo)
+  display: flex;
+  background-color: #f59e0b;
+  color: #fff;
+  justify-content: space-between;
+  .admin-toolbar-spacer {
+    flex: 1 1 auto;
+  }
+}
+
+// --- Envoltorio del Contenido (Router Outlet) ---
+
+.content-wrapper {
+  // Ocupa el espacio restante debajo del toolbar
+  flex-grow: 1;
+  // Padding para el contenido de la página
+  padding: 2rem;
+  // Permite scroll solo en esta área
+  overflow-y: auto;
+}
+
+// --- Estado Colapsado (Desktop) ---
+// Añade la clase 'sidebar-collapsed' al .admin-container (manejado con JS/TS)
+
+.admin-container.sidebar-collapsed {
+  .admin-sidenav {
+    width: 80px; // Ancho colapsado
+
+    .admin-logo-title,
+    span[matListItemTitle] {
+      opacity: 0;
+      width: 0;
+    }
+
+    // Centra el ícono cuando el texto desaparece
+    // (Puede requerir ajustes según la versión de Material)
+    mat-icon[matListItemIcon] {
+      margin-right: 0;
+    }
+
+    .mat-list-item-content {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+}
+
+// --- Diseño Responsivo (Móvil) ---
+// NOTA: Para responsividad, deberías usar el BreakpointObserver de Angular
+// en tu componente .ts para cambiar el 'mode' de 'side' a 'over'
+// y manejar la apertura/cierre del sidenav.
+
+@media (max-width: 992px) {
+  .content-wrapper {
+    // Reduce el padding en pantallas pequeñas
+    padding: 1.5rem;
+  }
+
+  // En modo 'over' (móvil), el sidenav se superpondrá.
+  // Angular Material maneja el overlay (backdrop).
+  .admin-sidenav {
+    // El ancho puede ser el mismo o diferente en móvil
+    width: 260px;
+  }
+}
+
+.botones-navegacion {
+   // Personaliza el indicador activo de Angular Material
+  @include mat.list-overrides(
+    (
+      list-item-hover-state-layer-color: #f59e0b,
+      list-item-focus-state-layer-color: #f59e0b,
+    )
+  );
+}

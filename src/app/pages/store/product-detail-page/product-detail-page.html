@@ -1,0 +1,130 @@
+<div class="detail-container section-padding">
+  <!-- Spinner de Carga -->
+  @if (isLoading) {
+  <div class="loading-spinner">
+    <mat-spinner></mat-spinner>
+    <p>Cargando producto...</p>
+  </div>
+  }
+
+  <!-- Contenido del Producto -->
+  @if (product && !isLoading) {
+  <div class="detail-content">
+    <!-- Botón de Volver -->
+    <button matButton="outlined" (click)="router.navigate(['/store'])" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+      Volver a la tienda
+    </button>
+
+    <!-- Grid Principal -->
+    <div class="detail-grid">
+      <!-- 1. Columna de Imágenes -->
+      <section class="image-gallery">
+        <div class="main-image">
+          <img
+            [src]="selectedImageUrl || 'https://placehold.co/600x600/eeeeee/aaaaaa?text=Producto'"
+            [alt]="product.name"
+          />
+        </div>
+        <div class="thumbnail-grid">
+          @for (image of product.imageUrls; track $index) {
+          <img
+            [src]="image"
+            [alt]="'Miniatura ' + ($index + 1)"
+            class="thumbnail"
+            [class.active]="image === selectedImageUrl"
+            (click)="changeMainImage(image)"
+          />
+          }
+        </div>
+      </section>
+
+      <!-- 2. Columna de Información -->
+      <section class="product-info">
+        <h1 class="product-title">{{ product.name }}</h1>
+        <p class="product-description">{{ product.description }}</p>
+        <div class="price-container">
+          <div class="product-price">
+            <span class="price-label">Precio: </span>
+            <span class="item-price-value">{{ product.price | guarani }}</span>
+          </div>
+        </div>
+
+        <!-- Opciones de Empaque -->
+        <div class="packaging-section">
+          <h3 class="section-subtitle">Elige un Empaque (Opcional)</h3>
+          <mat-radio-group
+            (change)="onRadioChange($event)"
+            class="packaging-options"
+            [(ngModel)]="selectedPackaging"
+            (ngModelChange)="onPackagingChange()"
+          >
+            @for (option of packagingOptions; track option.type) {
+            <mat-radio-button
+              [value]="option"
+              class="packaging-option"
+              [class.active]="selectedPackaging?.type === option.type"
+            >
+              <div class="option-content">
+                <img [src]="option.imageUrl" [alt]="option.name" class="option-image" />
+                <div class="option-details">
+                  <strong>{{ option.name }}</strong>
+                  <span>{{ option.description }}</span>
+                  <span class="option-price">+ {{ option.price | guarani }}</span>
+                </div>
+              </div>
+            </mat-radio-button>
+            }
+            <!-- Opción para no seleccionar ninguno -->
+            <mat-radio-button [value]="null" class="packaging-option">
+              <div class="option-content">
+                <div class="option-details">
+                  <strong>Ninguno</strong>
+                  <span>El producto se entregará sin empaque de regalo.</span>
+                </div>
+              </div>
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <!-- Precio del Producto -->
+        <div class="price-container">
+          <div class="total-price">
+            <span class="price-label">SubTotal:</span>
+            <span class="price-value">{{ totalPrice | guarani }}</span>
+          </div>
+        </div>
+
+        <!-- Cantidad y Botón de Añadir al Carrito -->
+        <div class="actions-container">
+          <app-quantity-input
+            [maxQuantity]="maxAvailableQuantity"
+            (quantityChange)="onQuantityChange($event)"
+          ></app-quantity-input>
+          <button
+            matButton="filled"
+            class="add-to-cart-button"
+            (click)="addToCart()"
+            [disabled]="product.stock === 0"
+          >
+            <mat-icon>add_shopping_cart</mat-icon>
+            <span>{{ product.stock > 0 ? 'Añadir al Carrito' : 'Sin Stock' }}</span>
+          </button>
+        </div>
+      </section>
+    </div>
+  </div>
+  }
+
+  <!-- Producto No Encontrado -->
+  @if (!product && !isLoading) {
+  <div class="not-found">
+    <h2>Producto no encontrado</h2>
+    <p>El producto que buscas no existe o no está disponible.</p>
+    <button matButton="elevated" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver a la tienda
+    </button>
+  </div>
+  }
+</div>

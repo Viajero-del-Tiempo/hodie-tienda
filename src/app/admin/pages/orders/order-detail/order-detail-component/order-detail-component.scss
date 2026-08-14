@@ -1,0 +1,197 @@
+/* Estilos Estructurales para OrderDetail (Sin Colores) */
+@use '@angular/material' as mat;
+
+:host {
+  display: block;
+}
+
+.detail-container {
+  padding: 1.5rem; // Espaciado general
+}
+
+/* --- Cabecera --- */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  // Ajuste para pantallas pequeñas
+  flex-wrap: wrap; 
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  
+  h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 500;
+  }
+}
+
+.header-spacer {
+  flex: 1 1 auto; // Empuja las acciones a la derecha
+}
+
+
+.update-button {
+  // Altura consistente con el select
+  min-height: 48px;
+  color: #333333;
+}
+
+/* Píldora de estado (copiada de list.scss) */
+.order-status-pill {
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px; // píldora
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  // (Aquí aplicarías tus 'background-color' y 'color' 
+  // basados en las clases .status-pendiente, .status-completado, etc.)
+  &.status-pending {
+    // Pendiente
+    color: #FACC15;
+    border: 1px solid #FACC15;
+    background-color: transparent;
+  }
+
+  &.status-paid {
+    //Pagado
+    color: #22C55E;
+    border: 1px solid #22C55E;
+    background-color: transparent;
+  }
+
+  &.status-preparing {
+    //Preparacion
+    color: #3B82F6;
+    border: 1px solid #3B82F6;
+    background-color: transparent;
+  }
+
+  &.status-shipped {
+    // Enviado
+    color: #6366F1;
+    border: 1px solid #6366F1;
+    background-color: transparent;
+  }
+
+  &.status-delivered {
+    // Completado
+    color: #15803D;
+    border: 1px solid #15803D;
+    background-color: transparent;
+    }
+
+  &.status-cancelled {
+    // Cancelado
+    color: #EF4444;
+    border: 1px solid #EF4444;
+    background-color: transparent;
+  }
+  
+}
+
+/* --- Grid de Contenido --- */
+.detail-grid {
+  display: grid;
+  // Grid de 3 columnas (2 para info, 1 para resumen)
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 1.5rem;
+}
+
+.grid-col-span-1 {
+  grid-column: span 1;
+}
+.grid-col-span-2 {
+  grid-column: span 2;
+}
+
+// Espaciado entre tarjetas
+.detail-card {
+  margin-bottom: 1.5rem;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Párrafo de dirección
+.shipping-address {
+  line-height: 1.6;
+  padding: 0 1rem;
+  font-family: 'Poppins';
+}
+
+// Lista de productos
+.product-item {
+  // Estilos para el meta (cantidad x precio)
+  .product-meta {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .product-total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    &.total-color-pendiente {
+      color: #FFC107;
+    }
+    &.total-color-pagado {
+      color: #3b82f6;
+    }
+    &.total-color-enviado {
+      color: #6366f1;
+    }
+    &.total-color-entregado {
+      color: #10b981;
+    }
+    &.total-color-cancelado {
+      color: #ef4444;
+    }
+  }
+}
+
+// Resumen de pago
+
+
+/* --- Media Query para Responsividad --- */
+@media (max-width: 960px) {
+  .detail-grid {
+    // En tablets y móviles, 1 columna
+    grid-template-columns: 1fr;
+  }
+  // Todo ocupa 1 columna
+  .grid-col-span-1,
+  .grid-col-span-2 {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  // En móvil, la cabecera se apila
+  .detail-header {
+    .header-spacer {
+      display: none; // Oculta el espaciador
+    }
+    .status-select, .update-button {
+      width: 100%; // Acciones ocupan todo el ancho
+    }
+  }
+}
+
+
+.card-outline-color {
+  padding: 1rem;
+  @include mat.card-overrides(
+    (
+      outlined-outline-color: #f59e0b,
+      outlined-container-color: #ffffff,
+    )
+  );
+}
+
+.status-form {
+  margin-top: 1.5rem;
+}

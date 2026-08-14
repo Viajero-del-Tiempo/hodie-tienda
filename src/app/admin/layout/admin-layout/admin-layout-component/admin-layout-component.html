@@ -1,0 +1,63 @@
+<mat-sidenav-container class="admin-container" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <!-- Añade los bindings [model] y [opened] -->
+  <mat-sidenav [mode]="sidenavMode" [opened]="sidenavOpened" class="admin-sidenav">
+    <div class="admin-logo-container">
+       <img src="assets/images/logo1.PNG" alt="logo1" class="admin-logo-image" />
+      <!-- 3. Botón para colapsar (SOLO DESKTOP) -->
+      <!-- Se oculta en móvil (isMobile) -->
+     <!-- @if (!isMobile) {
+      <button matIconButton (click)="toggleSidebarCollapse()" class="admin-collapse-button">
+        <mat-icon>{{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
+      } -->
+      <h2 class="admin-logo-title">HoDie</h2>
+    </div>
+   
+    
+
+    <!-- Navegación lateral -->
+    <mat-nav-list class="botones-navegacion">
+      <a mat-list-item routerLink="/admin/dashboard" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      <a mat-list-item routerLink="/admin/orders" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>shopping_cart</mat-icon>
+        <span matListItemTitle>Pedidos</span>
+      </a>
+      <a mat-list-item routerLink="/admin/products" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>inventory_2</mat-icon>
+        <span matListItemTitle>Productos</span>
+      </a>
+      <a mat-list-item routerLink="/admin/users" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Clientes</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+  <!-- Contenido principal -->
+  <mat-sidenav-content class="admin-content">
+    <mat-toolbar class="admin-toolbar">
+      <!-- 4. Botón de Menú Hamburguesa (SOLO MÓVIL) -->
+      <!-- Se muestra solo en móvil (isMobile) -->
+      @if (isMobile) {
+      <button matIconButton (click)="toggleSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      }
+
+      <span> Bienvenido, Admin </span>
+
+      <!-- Espaciador para empujar el botón de perfil al final -->
+      <span class="toolbar-spacer"></span>
+
+      <button matIconButton matTooltip="Salir" [routerLink]="['']">
+        <mat-icon style="color: white;">logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

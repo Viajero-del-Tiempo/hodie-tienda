@@ -1,0 +1,30 @@
+@if (product) {
+<mat-card class="product-card card-outline-color" appearance="outlined">
+  <img
+    mat-card-image
+    class="product-card-image"
+    [src]="product.imageUrls ? product.imageUrls[0] : ''"
+    [alt]="product.name"
+    onerror="this.src='https://placehold.co/400x400/eeeeee/aaaaaa?text=Producto'"
+  />
+  <mat-card-content>
+    <h4>{{ product.name }}</h4>
+    <span class="product-price">
+      {{ product.price | guarani }}
+    </span>
+  </mat-card-content>
+  <mat-card-actions>
+    <button matButton [routerLink]="['/store', product.id]">
+      <mat-icon>visibility</mat-icon>
+      Ver
+    </button>
+    @if (showAddToCartButton) {
+    <button matButton>
+      <mat-icon>add_shopping_cart</mat-icon>
+      Añadir
+    </button>
+    }
+  </mat-card-actions>
+</mat-card>
+}
+

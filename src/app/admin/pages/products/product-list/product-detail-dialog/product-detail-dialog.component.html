@@ -1,0 +1,62 @@
+<h2 mat-dialog-title>Detalles del Producto</h2>
+<mat-dialog-content class="mat-typography">
+  @if (product) {
+  <mat-card class="mat-card" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>{{ product.name }}</mat-card-title>
+      <mat-card-subtitle>Código: {{ product.sku }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="product-images">
+        @if (product.imageUrls && product.imageUrls.length > 0) { @for (url of product.imageUrls;
+        track url) {
+        <img [src]="url" alt="Imagen de {{ product.name }}" class="product-image" />
+        } } @else {
+        <img
+          src="https://placehold.co/100x100/eeeeee/aaaaaa?text=No+Image"
+          alt="No hay imagen"
+          class="product-image"
+        />
+        }
+      </div>
+
+      <p class="product-description">{{ product.description }}</p>
+
+      <mat-list dense>
+        <mat-list-item>
+          <mat-icon matListItemIcon>attach_money</mat-icon>
+          <div matListItemTitle>Precio Base:</div>
+          <div matListItemLine>{{ product.price | guarani }}</div>
+        </mat-list-item>
+        <mat-list-item>
+          <mat-icon matListItemIcon>inventory_2</mat-icon>
+          <div matListItemTitle>Stock:</div>
+          <div matListItemLine>{{ product.stock }} unidades</div>
+        </mat-list-item>
+        <mat-list-item>
+          <mat-icon matListItemIcon>event</mat-icon>
+          <div matListItemTitle>Fecha de Creación:</div>
+          <div matListItemLine>{{ product.createdAt.toDate() | date : 'medium' }}</div>
+        </mat-list-item>
+        <mat-list-item>
+          <mat-icon matListItemIcon>event_note</mat-icon>
+          <div matListItemTitle>Última Actualización:</div>
+          <div matListItemLine>{{ product.updatedAt.toDate() | date : 'medium' }}</div>
+        </mat-list-item>
+      </mat-list>
+
+      @if (product.packagingPrices) {
+      <h3 class="section-title">Precios de Empaques</h3>
+      <mat-chip-listbox aria-label="Precios de empaques">
+        @for (item of product.packagingPrices | keyvalue; track item) {
+        <mat-chip> {{ item.key }}: {{ item.value | guarani }} </mat-chip>
+        }
+      </mat-chip-listbox>
+      }
+    </mat-card-content>
+  </mat-card>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button matButton="elevated" (click)="onClose()">Cerrar</button>
+</mat-dialog-actions>
