@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Observable, take } from 'rxjs';
+import { Observable } from 'rxjs';
 
 // --- SERVICIOS Y MODELOS ---
 import { Cart, CartItem, CartService } from '@core/services/cart.service';
@@ -32,17 +32,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     GuaraniPipe,
     QuantityInputComponent,
   ],
-  templateUrl:'./cart-page.html',
+  templateUrl: './cart-page.html',
   styleUrls: ['./cart-page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CartPage {
-
   cartService = inject(CartService);
   location = inject(Location);
 
   cart$: Observable<Cart> = this.cartService.getCart();
-
 
   /**
    * Actualiza la cantidad de un artículo en el carrito.
@@ -74,5 +72,4 @@ export class CartPage {
   goBack(): void {
     this.location.back();
   }
-
 }
