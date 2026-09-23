@@ -22,6 +22,10 @@ export interface Product {
   // Control de inventario
   stock: number; // Cantidad disponible
   
+  // Estado de activación (soft-delete)
+  active?: boolean;
+  deletedAt?: Timestamp;
+
   // Metadatos
   createdAt: Timestamp; // Fecha de creación del producto
   updatedAt: Timestamp; // Última fecha de actualización

@@ -10,7 +10,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { UserService } from '@core/services/user.service';
 import { NotificationService } from '@core/services/notification.service';
-import { UserRole } from '@core/models/user.model';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -88,29 +87,19 @@ export class LoginPage {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     try {
-      // 1. Verificar el código de WhatsApp
+      // 1. Verificar el código de WhatsApp (el backend valida OTP y asegura el registro del usuario con Admin SDK)
       await lastValueFrom(this.authService.verifyWhatsappCode(formattedPhone, code));
 
-      // 2. Obtener el usuario por teléfono directamente (sin llamar a verifySession innecesariamente)
+      // 2. Obtener perfil autenticado para saludo personalizado
       const user = await lastValueFrom(this.userService.getUserByPhone(formattedPhone));
 
-      if (!user) {
-        // Si el usuario no existe, lo creamos
-        const newUser = { phoneNumber: formattedPhone, role: UserRole.Customer };
-        await this.userService.addUser({
-          displayName: '',
-          ...newUser,
-          whatsapp_verified: true,
-          profile_status: 'incomplete',
-        });
-        this.notificationService.showSuccess('Usuario registrado y sesión iniciada.');
+      if (user?.displayName) {
+        this.notificationService.showSuccess(`¡Bienvenido de nuevo, ${user.displayName}!`);
       } else {
-        // Si ya existe, actualizamos whatsapp_verified a true
-        await this.userService.updateUser(user.uid!, { whatsapp_verified: true });
         this.notificationService.showSuccess('Sesión iniciada correctamente.');
       }
 
-      // 3. Navegar a /cart una vez confirmadas las escrituras en la base de datos
+      // 3. Navegar a /cart
       this.router.navigate(['/cart']);
     } catch (err: any) {
       console.error('Error durante la verificación/creación de login:', err);

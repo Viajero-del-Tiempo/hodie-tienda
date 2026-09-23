@@ -39,6 +39,7 @@ export interface User {
   uid: string; // ID de autenticación de Firebase
   phoneNumber: string; // Número de WhatsApp para login y notificaciones
   displayName: string; // Nombre del cliente
+  role?: UserRole | 'customer' | 'admin'; // Rol de permisos
   whatsapp_verified: boolean; // Verificación de WhatsApp
   profile_status: "incomplete" | "complete"; // Estado de registro de perfil
   
@@ -48,10 +49,11 @@ export interface User {
   //Dirección de facturación
   billingAddress?: BillingAddress;
   
-  // Rol del usuario
-  role: UserRole;
-  
+  // Estado activo / desactivado (soft-delete)
+  active?: boolean;
+  deletedAt?: any;
+
   // Metadatos
-  createdAt: Timestamp; // Fecha de registro
+  createdAt: any; // Fecha de registro (Timestamp o Date)
 }
 

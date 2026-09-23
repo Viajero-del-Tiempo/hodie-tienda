@@ -93,3 +93,26 @@
   color: #7d5725;
 }
 
+.boton-reactivar {
+  color: #16a34a;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-active {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.badge-inactive {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+

@@ -54,8 +54,8 @@ import { ProductDetailDialogComponent } from '../product-detail-dialog/product-d
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductListComponent implements OnInit, OnDestroy {
-  // Columnas a mostrar
-  displayedColumns: string[] = ['image', 'name', 'price', 'stock', 'actions'];
+  // Columnas a mostrar (incluye estado activo/desactivado)
+  displayedColumns: string[] = ['image', 'name', 'price', 'stock', 'status', 'actions'];
   dataSource: MatTableDataSource<Product> = new MatTableDataSource<Product>();
   isLoading = false;
   private productsSubscription: Subscription | undefined;
@@ -84,22 +84,22 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Carga la lista de productos desde el servicio.
+   * Carga la lista completa de productos (activos e inactivos) desde la API de Express.
    */
   loadProducts(): void {
-    this.isLoading = true; // Mostrar el spinner
+    this.isLoading = true;
 
-    this.productsSubscription = this.productService.getProducts().subscribe({
+    this.productsSubscription = this.productService.getAdminProducts().subscribe({
       next: (products) => {
         this.dataSource.data = products;
-        this.isLoading = false; // Ocultar el spinner
-        this.cdr.detectChanges(); // Forzar detección de cambios
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al cargar productos:', err);
         this.notificationService.showError('Error al cargar los productos.');
-        this.isLoading = false; // Ocultar el spinner
-        this.cdr.detectChanges(); // Forzar detección de cambios
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -121,21 +121,37 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Elimina un producto de la base de datos.
+   * Desactiva un producto (soft-delete) a través del backend Express.
    */
   deleteProduct(id: string) {
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    if (confirm('¿Estás seguro de que quieres desactivar este producto del catálogo?')) {
       this.productService
         .deleteProduct(id)
         .then(() => {
-          this.notificationService.showSuccess('Producto eliminado correctamente.');
-          this.loadProducts(); // Recargar la lista después de eliminar
+          this.notificationService.showSuccess('Producto desactivado correctamente.');
+          this.loadProducts();
         })
         .catch((error) => {
-          console.error('Error al eliminar producto:', error);
-          this.notificationService.showError('Error al eliminar el producto.');
+          console.error('Error al desactivar producto:', error);
+          this.notificationService.showError('Error al desactivar el producto.');
         });
     }
+  }
+
+  /**
+   * Reactiva un producto previamente desactivado.
+   */
+  reactivateProduct(id: string) {
+    this.productService
+      .reactivateProduct(id)
+      .then(() => {
+        this.notificationService.showSuccess('Producto reactivado correctamente en el catálogo.');
+        this.loadProducts();
+      })
+      .catch((error) => {
+        console.error('Error al reactivar producto:', error);
+        this.notificationService.showError('Error al reactivar el producto.');
+      });
   }
 
   ngOnDestroy() {

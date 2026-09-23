@@ -46,8 +46,8 @@ import { UserDetailDialogComponent } from '../user-detail-dialog/user-detail-dia
 })
 export class UserListComponent implements AfterViewInit, OnInit, OnDestroy {
 
-  // Columnas a mostrar
-  displayedColumns: string[] = ['avatar', 'displayName', 'phoneNumber', 'role', 'createdAt', 'actions'];
+  // Columnas a mostrar (incluye estado activo/inactivo)
+  displayedColumns: string[] = ['avatar', 'displayName', 'phoneNumber', 'role', 'status', 'createdAt', 'actions'];
   dataSource: MatTableDataSource<User>;
   private destroy$ = new Subject<void>(); // Subject to manage subscriptions
 
@@ -184,14 +184,35 @@ export class UserListComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   deleteUser(user: User) {
-    if (confirm(`¿Estás seguro de que quieres eliminar a ${user.displayName}?`)) {
+    if (confirm(`¿Estás seguro de que quieres desactivar a ${user.displayName || user.phoneNumber}?`)) {
       if (user.uid) {
-        this.userService.deleteUser(user.uid).then(() => {
-          this.snackBar.open('Usuario eliminado exitosamente', 'Cerrar', { duration: 3000 });
-          this.loadUsers();
-        }).catch((error: any) => { // Explicitly type error
-          this.snackBar.open('Error al eliminar usuario: ' + error.message, 'Cerrar', { duration: 3000 });
-        });
+        this.userService
+          .deleteUser(user.uid)
+          .then(() => {
+            this.snackBar.open('Usuario desactivado exitosamente', 'Cerrar', { duration: 3000 });
+            this.loadUsers();
+          })
+          .catch((error: any) => {
+            const msg = error.error?.error || error.message || 'Error al desactivar usuario';
+            this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
+          });
+      }
+    }
+  }
+
+  reactivateUser(user: User) {
+    if (confirm(`¿Estás seguro de que quieres reactivar a ${user.displayName || user.phoneNumber}?`)) {
+      if (user.uid) {
+        this.userService
+          .updateUser(user.uid, { active: true })
+          .then(() => {
+            this.snackBar.open('Usuario reactivado exitosamente', 'Cerrar', { duration: 3000 });
+            this.loadUsers();
+          })
+          .catch((error: any) => {
+            const msg = error.error?.error || error.message || 'Error al reactivar usuario';
+            this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
+          });
       }
     }
   }

@@ -20,7 +20,6 @@ import { CartService, Cart } from '@core/services/cart.service';
 import { NotificationService } from '@core/services/notification.service';
 import { GuaraniPipe } from '@core/pipes/guarani.pipe';
 import { Observable } from 'rxjs';
-import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-checkout-page',
@@ -241,7 +240,7 @@ export class CheckoutPage implements OnInit {
     };
 
     this.userService
-      .updateUser(this.user.uid, updatedUser)
+      .updateMyProfile(updatedUser)
       .then(() => {
         this.notificationService.showSuccess('¡Perfil actualizado con éxito!');
         // Volvemos a cargar los datos para reflejar el estado "complete"
@@ -277,18 +276,14 @@ export class CheckoutPage implements OnInit {
         imageUrl: item.product.imageUrls?.[0] || '', // Usar la primera imagen o string vacío
       }));
 
-      const orderNumber = this.generateOrderNumber();
-
       // Usamos una dirección de envío por defecto (la primera)
       const shippingAddress = this.user.addresses[0];
 
       // Calculamos el costo de envío (por ahora fijo o 0, según lógica de negocio)
-      const shippingCost = 0; // O implementar lógica de cálculo
+      const shippingCost = 0;
       const total = cart.subtotal + shippingCost;
 
-      const newOrder: Order = {
-        id: '', // Se generará en el servicio
-        orderNumber: orderNumber,
+      const newOrder = {
         userId: this.user.uid,
         userDisplayName: this.user.displayName,
         userPhoneNumber: this.user.phoneNumber,
@@ -298,59 +293,40 @@ export class CheckoutPage implements OnInit {
         subtotal: cart.subtotal,
         shippingCost: shippingCost,
         total: total,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
       };
 
-      // 1. Crear el pedido en la base de datos
+      // 1. Crear el pedido en el backend (valida, asigna orderNumber atómico, persiste y envía comprobante PDF)
       const res = await this.orderService.createOrder(newOrder);
+      const officialOrderNumber = res.orderNumber;
       this.notificationService.showSuccess('Pedido creado correctamente');
 
-      // 2. Enviar notificaciones por WhatsApp en segundo plano (sin bloquear al usuario)
+      // 2. Enviar mensaje de estado inicial por WhatsApp en segundo plano
       this.whatsappService
         .updateOrderStatusByWhatsapp(this.user.phoneNumber, OrderStatus.Pending, newOrder.total)
         .subscribe({
           next: () => {
-            this.notificationService.showSuccess('Estado del pedido actualizado con éxito.');
+            console.log('Notificación de estado enviada');
           },
           error: (err) => {
             console.error('Error updating order status:', err);
-            this.notificationService.showError('Hubo un error al actualizar el estado del pedido.');
           },
         });
 
-      this.whatsappService.sendOrderByWhatsapp(res).subscribe({
-        next: () => {
-          this.notificationService.showSuccess('Pedido enviado por WhatsApp correctamente');
-        },
-        error: (err) => {
-          console.error('Error sending order by WhatsApp:', err);
-          this.notificationService.showError(
-            'No se pudo enviar por WhatsApp pero el pedido fue creado correctamente',
-          );
-        },
-      });
-
-      // 3. Confirmar al usuario, limpiar carrito y redirigir
+      // 3. Confirmar al usuario, limpiar carrito y redirigir con el número de orden oficial
       this.notificationService.showSuccess(
-        `¡Pedido ${orderNumber} realizado con éxito! Te contactaremos por WhatsApp.`,
+        `¡Pedido ${officialOrderNumber} realizado con éxito! Te contactaremos por WhatsApp.`
       );
 
       this.cartService.clearCart();
-      this.router.navigate(['/checkout/success'], { queryParams: { order: orderNumber } });
+      this.router.navigate(['/checkout/success'], { queryParams: { order: officialOrderNumber } });
     } catch (error) {
       console.error('Error placing order:', error);
       this.notificationService.showError(
-        'Hubo un error al procesar tu pedido. Inténtalo de nuevo.',
+        'Hubo un error al procesar tu pedido. Inténtalo de nuevo.'
       );
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();
     }
-  }
-
-  private generateOrderNumber(): string {
-    const randomDigits = Math.floor(100000 + Math.random() * 900000); // Genera 6 dígitos aleatorios
-    return `hodie${randomDigits}`;
   }
 }

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Catálogo de productos: Lectura pública para la tienda online.
+    // La creación, edición y desactivación (soft-delete) se gestionan
+    // exclusivamente a través del backend Express con Admin SDK.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 2. Pedidos: Operaciones sensibles centralizadas en el backend Express.
+    // Protegido con Admin SDK para garantizar la generación secuencial de orderNumber,
+    // transacciones de stock atómicas y envío seguro de comprobantes por WhatsApp.
+    match /orders/{orderId} {
+      allow read, write: if false;
+    }
+
+    // 3. Usuarios y perfiles: Lectura y modificación gestionadas exclusivamente
+    // por el backend Express (/users/me para clientes, /admin/users para administradores).
+    match /users/{userId} {
+      allow read, write: if false;
+    }
+
+    // 4. Regla por defecto (Principio de menor privilegio):
+    // Cualquier otra colección no listada explícitamente queda cerrada a lectura y escritura directa.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

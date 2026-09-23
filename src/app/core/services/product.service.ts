@@ -1,43 +1,63 @@
 import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import {
   Firestore,
   collection,
   doc,
   getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
   getDocs,
   CollectionReference,
-  Timestamp,
-  runTransaction,
 } from '@angular/fire/firestore';
-import { Observable, from } from 'rxjs';
+import { Observable, from, firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Product } from '../models/product.model';
-import { Order } from '../models/order.model';
+import { environment } from '../../../environments/environment';
+
+export interface AdminProductsResponse {
+  success: boolean;
+  products: Product[];
+}
+
+export interface AdminProductResponse {
+  success: boolean;
+  product: Product;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
   private firestore = inject(Firestore);
+  private http = inject(HttpClient);
+  private apiUrl = environment.whatsappApiUrl;
+
   private productsCollectionRef = collection(
     this.firestore,
     'products'
   ) as CollectionReference<Product>;
 
   /**
-   * Obtiene todos los productos de Firestore.
+   * Obtiene todos los productos ACTIVOS de Firestore para la tienda pública.
+   * Filtra productos que hayan sido desactivados (soft-deleted).
    */
   getProducts(): Observable<Product[]> {
     return from(getDocs(this.productsCollectionRef)).pipe(
       map((snapshot) => {
-        return snapshot.docs.map((doc) => {
-          return { ...(doc.data() as Product), id: doc.id };
-        });
+        return snapshot.docs
+          .map((doc) => ({ ...(doc.data() as Product), id: doc.id }))
+          .filter((product) => product.active !== false);
       }),
     );
+  }
+
+  /**
+   * Obtiene la lista completa de productos para el panel de administración
+   * (incluyendo productos activos y desactivados).
+   */
+  getAdminProducts(): Observable<Product[]> {
+    return this.http
+      .get<AdminProductsResponse>(`${this.apiUrl}/admin/products`)
+      .pipe(map((res) => res.products || []));
   }
 
   /**
@@ -57,108 +77,58 @@ export class ProductService {
   }
 
   /**
-   * Obtiene un producto por su ID.
+   * Obtiene un producto por su ID desde el backend (Admin).
    */
   async getProduct(id: string): Promise<Product | undefined> {
-    const productDocRef = doc(this.firestore, `products/${id}`);
-    const docSnap = await getDoc(productDocRef);
-    if (docSnap.exists()) {
-      return { ...(docSnap.data() as Product), id: docSnap.id };
+    try {
+      const res = await firstValueFrom(
+        this.http.get<AdminProductResponse>(`${this.apiUrl}/admin/products/${id}`)
+      );
+      return res.product;
+    } catch {
+      // Fallback a Firestore directo si la API da 404
+      const productDocRef = doc(this.firestore, `products/${id}`);
+      const docSnap = await getDoc(productDocRef);
+      if (docSnap.exists()) {
+        return { ...(docSnap.data() as Product), id: docSnap.id };
+      }
+      return undefined;
     }
-    return undefined;
   }
 
   /**
-   * Agrega un nuevo producto a Firestore.
+   * Agrega un nuevo producto a través de la API de Node.js (Admin SDK).
+   * Valida en el backend tipos, stock y las claves válidas de packagingPrices.
    */
   async addProduct(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
-    const newProduct: Omit<Product, 'id'> = {
-      ...product,
-      createdAt: Timestamp.fromDate(new Date()),
-      updatedAt: Timestamp.fromDate(new Date()),
-    };
-    await addDoc(this.productsCollectionRef, newProduct);
+    await firstValueFrom(this.http.post(`${this.apiUrl}/admin/products`, product));
   }
 
   /**
-   * Actualiza un producto existente en Firestore.
+   * Actualiza un producto existente a través de la API de Node.js.
    */
   async updateProduct(
     id: string,
     product: Partial<Omit<Product, 'id' | 'createdAt'>>,
   ): Promise<void> {
-    const productDocRef = doc(this.firestore, `products/${id}`);
-    const updatedProduct: Partial<Omit<Product, 'id'>> = {
-      ...product,
-      updatedAt: Timestamp.fromDate(new Date()),
-    };
-    await updateDoc(productDocRef, updatedProduct);
+    await firstValueFrom(this.http.put(`${this.apiUrl}/admin/products/${id}`, product));
   }
 
   /**
-   * Elimina un producto de Firestore por su ID.
+   * Desactiva un producto (soft-delete) a través de la API de Node.js.
+   * Si se requiere borrado físico definitivo, enviar force: true.
    */
-  async deleteProduct(id: string): Promise<void> {
-    const productDocRef = doc(this.firestore, `products/${id}`);
-    await deleteDoc(productDocRef);
+  async deleteProduct(id: string, force = false): Promise<void> {
+    const url = force
+      ? `${this.apiUrl}/admin/products/${id}?force=true`
+      : `${this.apiUrl}/admin/products/${id}`;
+    await firstValueFrom(this.http.delete(url));
   }
 
   /**
-   * Descuenta el stock de los productos de un pedido.
-   * Utiliza una transacción para asegurar la atomicidad.
+   * Reactiva un producto previamente desactivado en el catálogo.
    */
-  async deductStockForOrder(order: Order): Promise<void> {
-    try {
-      await runTransaction(this.firestore, async (transaction) => {
-        const quantityByProduct = new Map<string, number>();
-
-        for (const item of order.items) {
-          const currentQty = quantityByProduct.get(item.productId) || 0;
-          quantityByProduct.set(item.productId, currentQty + Number(item.quantity));
-        }
-
-        const productReads = [];
-        for (const [productId, totalQty] of quantityByProduct.entries()) {
-          const productRef = doc(this.firestore, `products/${productId}`);
-          productReads.push({
-            productId,
-            totalQty,
-            ref: productRef,
-            snapshotPromise: transaction.get(productRef),
-          });
-        }
-
-        const results = await Promise.all(
-          productReads.map(async (p) => ({
-            ...p,
-            snapshot: await p.snapshotPromise,
-          })),
-        );
-
-        for (const res of results) {
-          if (!res.snapshot.exists()) {
-            throw new Error(`Producto con ID: ${res.productId} no encontrado.`);
-          }
-
-          const data = res.snapshot.data();
-          const currentStock = Number(data['stock'] || 0);
-          const quantityToDeduct = res.totalQty;
-          const newStock = currentStock - quantityToDeduct;
-
-          if (newStock < 0) {
-            const productName = data['name'] || res.productId;
-            throw new Error(
-              `Stock insuficiente para ${productName}. Stock actual: ${currentStock}, Solicitado: ${quantityToDeduct}`,
-            );
-          }
-
-          transaction.update(res.ref, { stock: newStock });
-        }
-      });
-      console.log('Stock descontado correctamente para el pedido', order.id);
-    } catch (error) {
-      console.error('Error al descontar stock:', error);
-      throw error;
-    }
+  async reactivateProduct(id: string): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.apiUrl}/admin/products/${id}/reactivate`, {}));
   }
 }

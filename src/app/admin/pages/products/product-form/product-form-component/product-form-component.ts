@@ -195,9 +195,13 @@ export class ProductFormComponent implements OnInit {
       }
 
       this.goBack();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al guardar el producto:', error);
-      this.notificationService.showError('Error al guardar el producto. Inténtalo de nuevo.');
+      const serverMsg =
+        error?.error?.error ||
+        error?.message ||
+        'Error al guardar el producto. Inténtalo de nuevo.';
+      this.notificationService.showError(serverMsg);
     } finally {
       this.loading = false;
       this.cdr.markForCheck();
