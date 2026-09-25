@@ -15,7 +15,6 @@ import { BillingAddress, ShippingAddress, User } from '@core/models/user.model';
 import { Order, OrderItem, OrderStatus } from '@core/models/order.model';
 import { UserService } from '@core/services/user.service';
 import { OrderService } from '@core/services/order.service';
-import { WhatsAppService } from '@core/services/whatsapp.service';
 import { CartService, Cart } from '@core/services/cart.service';
 import { NotificationService } from '@core/services/notification.service';
 import { GuaraniPipe } from '@core/pipes/guarani.pipe';
@@ -45,7 +44,6 @@ export class CheckoutPage implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private orderService = inject(OrderService);
-  private whatsappService = inject(WhatsAppService);
   private cartService = inject(CartService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
@@ -265,6 +263,8 @@ export class CheckoutPage implements OnInit {
 
     this.isLoading = true;
 
+    let officialOrderNumber: string | undefined;
+
     try {
       const orderItems: OrderItem[] = cart.items.map((item) => ({
         productId: item.product.id,
@@ -295,35 +295,29 @@ export class CheckoutPage implements OnInit {
         total: total,
       };
 
-      // 1. Crear el pedido en el backend (valida, asigna orderNumber atómico, persiste y envía comprobante PDF)
+      // 1. Crear el pedido en el backend (valida, asigna orderNumber atómico, persiste y envía comprobante PDF con datos bancarios)
       const res = await this.orderService.createOrder(newOrder);
-      const officialOrderNumber = res.orderNumber;
-      this.notificationService.showSuccess('Pedido creado correctamente');
-
-      // 2. Enviar mensaje de estado inicial por WhatsApp en segundo plano
-      this.whatsappService
-        .updateOrderStatusByWhatsapp(this.user.phoneNumber, OrderStatus.Pending, newOrder.total)
-        .subscribe({
-          next: () => {
-            console.log('Notificación de estado enviada');
-          },
-          error: (err) => {
-            console.error('Error updating order status:', err);
-          },
-        });
-
-      // 3. Confirmar al usuario, limpiar carrito y redirigir con el número de orden oficial
-      this.notificationService.showSuccess(
-        `¡Pedido ${officialOrderNumber} realizado con éxito! Te contactaremos por WhatsApp.`
-      );
-
-      this.cartService.clearCart();
-      this.router.navigate(['/checkout/success'], { queryParams: { order: officialOrderNumber } });
+      officialOrderNumber = res.orderNumber;
     } catch (error) {
       console.error('Error placing order:', error);
       this.notificationService.showError(
         'Hubo un error al procesar tu pedido. Inténtalo de nuevo.'
       );
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // 2. Si el pedido fue creado con éxito, cualquier falla posterior (limpieza de carrito o navegación)
+    // nunca debe mostrar un error de pedido fallido al cliente
+    try {
+      this.notificationService.showSuccess(
+        `¡Pedido ${officialOrderNumber} realizado con éxito! Te contactaremos por WhatsApp.`
+      );
+      this.cartService.clearCart();
+      await this.router.navigate(['/checkout/success'], { queryParams: { order: officialOrderNumber } });
+    } catch (postOrderError) {
+      console.error('Error in post-order tasks (cart clear or navigation):', postOrderError);
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();

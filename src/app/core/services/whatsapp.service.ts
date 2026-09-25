@@ -19,19 +19,4 @@ export class WhatsAppService {
       ...order,
     });
   }
-
-  /**
-   * Actualiza el estado de un pedido y notifica por WhatsApp.
-   */
-  updateOrderStatusByWhatsapp(
-    phone: string,
-    status: string,
-    amount: number | null,
-  ): Observable<any> {
-    return this.http.post<any>(`${this.whatsappApiUrl}/orders/order/status`, {
-      phone,
-      status,
-      amount,
-    });
-  }
 }
