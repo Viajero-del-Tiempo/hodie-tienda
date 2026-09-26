@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -23,6 +23,7 @@ import { NotificationService } from '@core/services/notification.service';
   ],
   templateUrl: './handoff-chats-component.html',
   styleUrl: './handoff-chats-component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HandoffChatsComponent implements OnInit {
   private chatService = inject(ChatService);
@@ -35,11 +36,15 @@ export class HandoffChatsComponent implements OnInit {
   resumingThreadId: string | null = null;
 
   ngOnInit(): void {
-    this.loadChats();
+    this.loadChats(true);
   }
 
-  loadChats(): void {
-    this.isLoading = true;
+  loadChats(showSpinner: boolean = true): void {
+    if (showSpinner) {
+      this.isLoading = true;
+      this.cdr.detectChanges();
+    }
+
     this.chatService.getHandoffChats().subscribe({
       next: (data) => {
         this.chats = data || [];
@@ -48,7 +53,12 @@ export class HandoffChatsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando conversaciones en handoff:', err);
-        this.notificationService.showError('No se pudieron cargar las conversaciones en atención humana.');
+        const errorMsg =
+          err.error?.error ||
+          err.error?.message ||
+          err.message ||
+          'No se pudieron cargar las conversaciones en atención humana.';
+        this.notificationService.showError(errorMsg);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -56,6 +66,10 @@ export class HandoffChatsComponent implements OnInit {
   }
 
   confirmResumeBot(chat: HandoffChat): void {
+    if (this.resumingThreadId !== null) {
+      return; // Prevenir dobles clics mientras hay una petición en curso
+    }
+
     const customerLabel = chat.userPhoneNumber
       ? `+${chat.userPhoneNumber}`
       : chat.whatsappChatId || chat.thread_id;
@@ -71,16 +85,26 @@ export class HandoffChatsComponent implements OnInit {
 
     this.chatService.resumeBot(chat.thread_id).subscribe({
       next: () => {
+        // 1. Quitar la fila de la tabla de inmediato (optimistic update)
+        this.chats = this.chats.filter((c) => c.thread_id !== chat.thread_id);
+        this.resumingThreadId = null;
+        this.cdr.detectChanges();
+
+        // 2. Mostrar toast de éxito
         this.notificationService.showSuccess(
           `Asistente virtual reanudado con éxito para ${customerLabel}.`
         );
-        this.resumingThreadId = null;
-        this.loadChats();
+
+        // 3. Refrescar la lista desde el backend en segundo plano sin bloquear la UI
+        this.loadChats(false);
       },
       error: (err) => {
         console.error('Error reactivando bot:', err);
         const errorMsg =
-          err.error?.error || 'Hubo un error al reanudar el asistente virtual.';
+          err.error?.error ||
+          err.error?.message ||
+          err.message ||
+          'Hubo un error al reanudar el asistente virtual.';
         this.notificationService.showError(errorMsg);
         this.resumingThreadId = null;
         this.cdr.detectChanges();

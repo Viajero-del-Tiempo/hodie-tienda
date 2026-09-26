@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog'; // Import MatDialog
@@ -57,7 +57,8 @@ export class UserListComponent implements AfterViewInit, OnInit, OnDestroy {
   constructor(
     private userService: UserService, // Inject UserService
     private dialog: MatDialog, // Inject MatDialog
-    private snackBar: MatSnackBar // Inject MatSnackBar
+    private snackBar: MatSnackBar, // Inject MatSnackBar
+    private cdr: ChangeDetectorRef // Inject ChangeDetectorRef
   ) {
     this.dataSource = new MatTableDataSource<User>(); // Initialize with empty data source
   }
@@ -81,6 +82,7 @@ export class UserListComponent implements AfterViewInit, OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((users: User[]) => { // Explicitly type users
         this.dataSource.data = users;
+        this.cdr.markForCheck();
       });
   }
 

@@ -3,6 +3,7 @@ import {
   ViewChild,
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   OnInit,
   inject,
   OnDestroy,
@@ -61,6 +62,7 @@ export class OrderListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatSort) sort!: MatSort;
 
   private orderService = inject(OrderService);
+  private cdr = inject(ChangeDetectorRef);
   private ordersSubscription: Subscription | undefined;
 
   constructor() {
@@ -82,9 +84,11 @@ export class OrderListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.ordersSubscription = this.orderService.getOrders().subscribe({
       next: (orders) => {
         this.dataSource.data = orders;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading orders:', err);
+        this.cdr.markForCheck();
       },
     });
   }

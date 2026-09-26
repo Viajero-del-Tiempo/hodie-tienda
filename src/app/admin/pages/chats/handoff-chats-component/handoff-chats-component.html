@@ -6,7 +6,7 @@
         Clientes que han sido transferidos a atención humana. Reanuda el asistente virtual para que el bot vuelva a responder automáticamente.
       </p>
     </div>
-    <button mat-stroked-button color="primary" (click)="loadChats()" [disabled]="isLoading">
+    <button mat-stroked-button color="primary" (click)="loadChats(true)" [disabled]="isLoading || resumingThreadId !== null">
       <mat-icon>refresh</mat-icon>
       Actualizar
     </button>
@@ -83,7 +83,7 @@
                 mat-flat-button
                 color="primary"
                 (click)="confirmResumeBot(chat)"
-                [disabled]="resumingThreadId === chat.thread_id"
+                [disabled]="resumingThreadId !== null"
                 class="resume-button"
                 matTooltip="Reanudar el bot para que vuelva a responder a este cliente"
               >
