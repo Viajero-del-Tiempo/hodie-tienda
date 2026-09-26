@@ -6,8 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ChatService, HandoffChat } from '@core/services/chat.service';
 import { NotificationService } from '@core/services/notification.service';
+import { ResumeBotDialogComponent } from './resume-bot-dialog.component';
 
 @Component({
   selector: 'app-handoff-chats',
@@ -20,6 +22,7 @@ import { NotificationService } from '@core/services/notification.service';
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatDialogModule,
   ],
   templateUrl: './handoff-chats-component.html',
   styleUrl: './handoff-chats-component.scss',
@@ -28,6 +31,7 @@ import { NotificationService } from '@core/services/notification.service';
 export class HandoffChatsComponent implements OnInit {
   private chatService = inject(ChatService);
   private notificationService = inject(NotificationService);
+  private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
 
   displayedColumns: string[] = ['customer', 'motivo', 'fecha', 'lastMessage', 'actions'];
@@ -74,41 +78,51 @@ export class HandoffChatsComponent implements OnInit {
       ? `+${chat.userPhoneNumber}`
       : chat.whatsappChatId || chat.thread_id;
 
-    const confirmed = confirm(
-      `¿Estás seguro de que deseas reanudar el Asistente Virtual para ${customerLabel}?\n\nEl bot volverá a responder automáticamente sus próximos mensajes.`
-    );
-
-    if (!confirmed) return;
-
-    this.resumingThreadId = chat.thread_id;
-    this.cdr.detectChanges();
-
-    this.chatService.resumeBot(chat.thread_id).subscribe({
-      next: () => {
-        // 1. Quitar la fila de la tabla de inmediato (optimistic update)
-        this.chats = this.chats.filter((c) => c.thread_id !== chat.thread_id);
-        this.resumingThreadId = null;
-        this.cdr.detectChanges();
-
-        // 2. Mostrar toast de éxito
-        this.notificationService.showSuccess(
-          `Asistente virtual reanudado con éxito para ${customerLabel}.`
-        );
-
-        // 3. Refrescar la lista desde el backend en segundo plano sin bloquear la UI
-        this.loadChats(false);
+    // Modal de Angular Material en lugar del alert/confirm nativo del navegador
+    const dialogRef = this.dialog.open(ResumeBotDialogComponent, {
+      width: '460px',
+      maxWidth: '92vw',
+      data: {
+        customerLabel,
+        motivo: chat.motivo,
+        threadId: chat.thread_id,
       },
-      error: (err) => {
-        console.error('Error reactivando bot:', err);
-        const errorMsg =
-          err.error?.error ||
-          err.error?.message ||
-          err.message ||
-          'Hubo un error al reanudar el asistente virtual.';
-        this.notificationService.showError(errorMsg);
-        this.resumingThreadId = null;
-        this.cdr.detectChanges();
-      },
+      disableClose: false,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.resumingThreadId = chat.thread_id;
+      this.cdr.detectChanges();
+
+      this.chatService.resumeBot(chat.thread_id).subscribe({
+        next: () => {
+          // 1. Quitar la fila de la tabla de inmediato (optimistic update)
+          this.chats = this.chats.filter((c) => c.thread_id !== chat.thread_id);
+          this.resumingThreadId = null;
+          this.cdr.detectChanges();
+
+          // 2. Mostrar toast de éxito
+          this.notificationService.showSuccess(
+            `Asistente virtual reanudado con éxito para ${customerLabel}.`
+          );
+
+          // 3. Refrescar la lista desde el backend en segundo plano sin bloquear la UI
+          this.loadChats(false);
+        },
+        error: (err) => {
+          console.error('Error reactivando bot:', err);
+          const errorMsg =
+            err.error?.error ||
+            err.error?.message ||
+            err.message ||
+            'Hubo un error al reanudar el asistente virtual.';
+          this.notificationService.showError(errorMsg);
+          this.resumingThreadId = null;
+          this.cdr.detectChanges();
+        },
+      });
     });
   }
 }
