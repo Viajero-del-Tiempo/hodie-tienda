@@ -23,7 +23,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // 4. Regla por defecto (Principio de menor privilegio):
+    // 4. Índice de hilos en atención humana (handoff_threads):
+    // Gestionado exclusivamente por el backend Express y Admin SDK.
+    match /handoff_threads/{threadId} {
+      allow read, write: if false;
+    }
+
+    // 5. Regla por defecto (Principio de menor privilegio):
     // Cualquier otra colección no listada explícitamente queda cerrada a lectura y escritura directa.
     match /{document=**} {
       allow read, write: if false;

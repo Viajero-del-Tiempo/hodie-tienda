@@ -68,6 +68,14 @@ export const ADMIN_ROUTES: Routes = [
             (m) => m.UserListComponent
           ),
       },
+      {
+        path: 'chats',
+        title: 'Atención Humana',
+        loadComponent: () =>
+          import('./pages/chats/handoff-chats-component/handoff-chats-component').then(
+            (m) => m.HandoffChatsComponent
+          ),
+      },
     ],
   },
 ];

@@ -1,0 +1,109 @@
+<div class="handoff-container">
+  <div class="header-container">
+    <div>
+      <h1 class="page-title">Conversaciones en atención humana</h1>
+      <p class="page-subtitle">
+        Clientes que han sido transferidos a atención humana. Reanuda el asistente virtual para que el bot vuelva a responder automáticamente.
+      </p>
+    </div>
+    <button mat-stroked-button color="primary" (click)="loadChats()" [disabled]="isLoading">
+      <mat-icon>refresh</mat-icon>
+      Actualizar
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando conversaciones en espera...</p>
+    </div>
+  } @else if (chats.length === 0) {
+    <mat-card class="empty-card" appearance="outlined">
+      <mat-card-content class="empty-content">
+        <mat-icon class="empty-icon">check_circle</mat-icon>
+        <h2>Sin conversaciones pendientes</h2>
+        <p>No hay ningún cliente bajo atención humana en este momento. El asistente virtual está activo en todos los chats.</p>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card appearance="outlined" class="table-card">
+      <div class="table-responsive">
+        <table mat-table [dataSource]="chats" class="handoff-table">
+          <!-- Columna Cliente / Teléfono -->
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef>Cliente / Teléfono</th>
+            <td mat-cell *matCellDef="let chat">
+              <div class="customer-info">
+                <mat-icon class="customer-icon">whatsapp</mat-icon>
+                <div class="customer-text">
+                  <span class="customer-phone">
+                    {{ chat.userPhoneNumber ? '+' + chat.userPhoneNumber : chat.whatsappChatId }}
+                  </span>
+                  @if (chat.whatsappChatId && chat.userPhoneNumber && chat.whatsappChatId.includes('@lid')) {
+                    <span class="customer-badge">WhatsApp Web / Linked</span>
+                  }
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Columna Motivo -->
+          <ng-container matColumnDef="motivo">
+            <th mat-header-cell *matHeaderCellDef>Motivo de Derivación</th>
+            <td mat-cell *matCellDef="let chat">
+              <span class="reason-chip">
+                {{ chat.motivo || 'Solicitud de asesor humano' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Fecha -->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Fecha de Derivación</th>
+            <td mat-cell *matCellDef="let chat">
+              <span class="date-text">{{ chat.fecha | date:'medium' }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Último Mensaje -->
+          <ng-container matColumnDef="lastMessage">
+            <th mat-header-cell *matHeaderCellDef>Último Mensaje del Cliente</th>
+            <td mat-cell *matCellDef="let chat" class="message-cell">
+              <span class="message-snippet" [matTooltip]="chat.lastCustomerMessage || 'Sin mensaje previo'">
+                {{ chat.lastCustomerMessage || '—' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Columna Acciones -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-header">Acciones</th>
+            <td mat-cell *matCellDef="let chat" class="actions-cell">
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="confirmResumeBot(chat)"
+                [disabled]="resumingThreadId === chat.thread_id"
+                class="resume-button"
+                matTooltip="Reanudar el bot para que vuelva a responder a este cliente"
+              >
+                @if (resumingThreadId === chat.thread_id) {
+                  <mat-spinner diameter="18" class="inline-spinner"></mat-spinner>
+                  <span>Reanudando...</span>
+                } @else {
+                  <span class="btn-label-content">
+                    <mat-icon>smart_toy</mat-icon>
+                    <span>Reanudar Asistente Virtual</span>
+                  </span>
+                }
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </mat-card>
+  }
+</div>
