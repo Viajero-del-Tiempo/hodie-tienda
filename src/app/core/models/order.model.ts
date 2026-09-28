@@ -63,6 +63,9 @@ export interface Order {
   shippingCost: number; // Costo de envío
   total: number; // subtotal + shippingCost
 
+  // Estado del comprobante
+  pdfDelivered?: boolean; // true: comprobante entregado por WhatsApp; false: pendiente de envío
+
   // Metadatos
   createdAt: Timestamp;
   updatedAt: Timestamp;

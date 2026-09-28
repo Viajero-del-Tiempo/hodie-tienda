@@ -11,6 +11,15 @@
       <span class="order-status-pill status-{{ order.status | lowercase  }}">
         {{ order.status | statusLabel }}
       </span>
+      @if (order.pdfDelivered === true) {
+        <span class="pdf-status-pill pdf-sent" matTooltip="Comprobante PDF entregado al WhatsApp del cliente">
+          <mat-icon inline>check_circle</mat-icon> PDF Enviado
+        </span>
+      } @else if (order.pdfDelivered === false) {
+        <span class="pdf-status-pill pdf-pending" matTooltip="PDF pendiente de envío (requiere envío manual)">
+          <mat-icon inline>warning</mat-icon> PDF Pendiente
+        </span>
+      }
     </div>
 
     <span class="header-spacer"></span>
@@ -125,6 +134,18 @@
             <mat-list-item class="product-item">
               <span matListItemTitle>Envío</span>
               <span matListItemMeta class="product-meta">{{ order.shippingCost | guarani }}</span>
+            </mat-list-item>
+            <mat-list-item class="product-item">
+              <span matListItemTitle>Comprobante PDF</span>
+              <span matListItemMeta class="product-meta">
+                @if (order.pdfDelivered === true) {
+                  <span class="text-success"><mat-icon inline>check_circle</mat-icon> Enviado</span>
+                } @else if (order.pdfDelivered === false) {
+                  <span class="text-warning"><mat-icon inline>warning</mat-icon> Pendiente</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </span>
             </mat-list-item>
             <mat-divider></mat-divider>
             <mat-list-item class="product-item">

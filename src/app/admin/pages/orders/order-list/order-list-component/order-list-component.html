@@ -57,6 +57,24 @@
             </td>
           </ng-container>
 
+          <!-- Columna PDF Comprobante -->
+          <ng-container matColumnDef="pdf">
+            <th mat-header-cell *matHeaderCellDef>PDF</th>
+            <td mat-cell *matCellDef="let order">
+              @if (order.pdfDelivered === true) {
+                <span class="pdf-pill pdf-sent" matTooltip="Comprobante PDF enviado al WhatsApp">
+                  <mat-icon inline>check_circle</mat-icon> Enviado
+                </span>
+              } @else if (order.pdfDelivered === false) {
+                <span class="pdf-pill pdf-pending" matTooltip="PDF pendiente de envío (requiere envío manual)">
+                  <mat-icon inline>warning</mat-icon> Pendiente
+                </span>
+              } @else {
+                <span class="text-muted" matTooltip="Sin información">—</span>
+              }
+            </td>
+          </ng-container>
+
           <!-- Columna Acciones (No ordenable) -->
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>

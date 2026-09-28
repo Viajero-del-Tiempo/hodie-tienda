@@ -78,7 +78,39 @@
     // Cancelado
     color: #EF4444;
   }
-  
+}
+
+/* Estilos para el estado del comprobante PDF */
+.pdf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+  }
+
+  &.pdf-sent {
+    background-color: #dcfce7;
+    color: #15803d;
+  }
+
+  &.pdf-pending {
+    background-color: #fef3c7;
+    color: #b45309;
+    font-weight: 600;
+  }
+}
+
+.text-muted {
+  color: #9ca3af;
 }
 
 // Espaciado de las celdas
