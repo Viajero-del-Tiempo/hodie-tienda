@@ -208,7 +208,7 @@
         <mat-card-content>
           <mat-list>
             @for (item of cart.items; track item.itemId) {
-            <mat-list-item>
+            <mat-list-item class="checkout-cart-item">
               <span matListItemTitle>{{ item.product.name }} ({{ item.quantity }}x)</span>
               <span matListItemLine class="item-details">
                 @if (item.selectedPackaging) {
@@ -219,6 +219,19 @@
                 item.unitPrice * item.quantity | guarani
               }}</span>
             </mat-list-item>
+            <div class="item-customization-container">
+              <mat-form-field appearance="outline" class="full-width customization-input-field">
+                <mat-label>¿Qué querés que diga? (opcional)</mat-label>
+                <input
+                  matInput
+                  maxlength="500"
+                  [(ngModel)]="itemCustomizations[item.itemId]"
+                  placeholder="Ej: Para Mamá con amor - Juan"
+                />
+                <mat-hint>Si querés grabar un logo o imagen, envianoslo por WhatsApp después de tu compra</mat-hint>
+              </mat-form-field>
+            </div>
+            <mat-divider></mat-divider>
             } @empty {
             <p class="empty-cart-message">Tu carrito está vacío.</p>
             }

@@ -52,7 +52,7 @@ import { StatusLabelPipe } from "../../../../../core/pipes/status-label.pipe";
 })
 export class OrderListComponent implements OnInit, AfterViewInit, OnDestroy {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['orderNumber', 'customer', 'date', 'total', 'status', 'pdf', 'actions'];
+  displayedColumns: string[] = ['orderNumber', 'customer', 'date', 'total', 'status', 'customization', 'pdf', 'actions'];
 
   // DataSource que conecta la tabla con los datos
   dataSource: MatTableDataSource<Order>;

@@ -57,6 +57,24 @@
             </td>
           </ng-container>
 
+          <!-- Columna Personalización -->
+          <ng-container matColumnDef="customization">
+            <th mat-header-cell *matHeaderCellDef>Personalización</th>
+            <td mat-cell *matCellDef="let order">
+              @if (order.customizationPending === true) {
+                <span class="customization-pill cust-pending" matTooltip="Personalización pendiente de confirmación">
+                  <mat-icon inline>edit_note</mat-icon> Pendiente
+                </span>
+              } @else if (order.customizationPending === false) {
+                <span class="customization-pill cust-ready" matTooltip="Personalización confirmada">
+                  <mat-icon inline>check_circle</mat-icon> Lista
+                </span>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+          </ng-container>
+
           <!-- Columna PDF Comprobante -->
           <ng-container matColumnDef="pdf">
             <th mat-header-cell *matHeaderCellDef>PDF</th>

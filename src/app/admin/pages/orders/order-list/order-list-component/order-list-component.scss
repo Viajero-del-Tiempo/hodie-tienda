@@ -109,6 +109,35 @@
   }
 }
 
+/* Estilos para la personalización */
+.customization-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+  }
+
+  &.cust-ready {
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+
+  &.cust-pending {
+    background-color: #fef3c7;
+    color: #b45309;
+    font-weight: 600;
+  }
+}
+
 .text-muted {
   color: #9ca3af;
 }

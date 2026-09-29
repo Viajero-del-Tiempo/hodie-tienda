@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,6 +25,7 @@ import { Observable } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -52,6 +53,7 @@ export class CheckoutPage implements OnInit {
 
   user: User | null = null;
   cart$: Observable<Cart>;
+  itemCustomizations: Record<string, string> = {};
 
   addressForm: FormGroup;
   billingAddressForm: FormGroup;
@@ -266,15 +268,20 @@ export class CheckoutPage implements OnInit {
     let officialOrderNumber: string | undefined;
 
     try {
-      const orderItems: OrderItem[] = cart.items.map((item) => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        productSku: item.product.sku,
-        quantity: item.quantity,
-        price: item.product.price,
-        selectedPackaging: item.selectedPackaging || null, // Usar null si es undefined para Firestore
-        imageUrl: item.product.imageUrls?.[0] || '', // Usar la primera imagen o string vacío
-      }));
+      const orderItems: OrderItem[] = cart.items.map((item) => {
+        const custText = (this.itemCustomizations[item.itemId] || '').trim();
+        return {
+          productId: item.product.id,
+          productName: item.product.name,
+          productSku: item.product.sku,
+          quantity: item.quantity,
+          price: item.product.price,
+          selectedPackaging: item.selectedPackaging || null,
+          imageUrl: item.product.imageUrls?.[0] || '',
+          customization: custText,
+          customizationPending: !custText,
+        };
+      });
 
       // Usamos una dirección de envío por defecto (la primera)
       const shippingAddress = this.user.addresses[0];

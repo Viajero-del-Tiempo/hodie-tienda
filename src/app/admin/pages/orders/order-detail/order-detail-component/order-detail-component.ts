@@ -18,7 +18,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FormsModule } from '@angular/forms';
 import { GuaraniPipe } from '../../../../../core/pipes/guarani.pipe';
 import { OrderService } from '@core/services/order.service';
 import { Order, OrderStatus } from '@core/models/order.model';
@@ -31,6 +33,7 @@ import { StatusLabelPipe } from '../../../../../core/pipes/status-label.pipe';
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     // Material
     MatCardModule,
     MatIconModule,
@@ -38,6 +41,7 @@ import { StatusLabelPipe } from '../../../../../core/pipes/status-label.pipe';
     MatListModule,
     MatDividerModule,
     MatFormFieldModule,
+    MatInputModule,
     MatSelectModule,
     MatTooltipModule,
     GuaraniPipe,
@@ -53,12 +57,17 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   orderStatuses = Object.values(OrderStatus);
   selectedStatus: OrderStatus = OrderStatus.Pending;
 
+  editingItemIndex: number | null = null;
+  customizationEditText: string = '';
+  isSavingCustomization = false;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private orderService = inject(OrderService);
   private notificationService = inject(NotificationService);
   private cdr = inject(ChangeDetectorRef);
   private orderSubscription: Subscription | undefined;
+  private custSubscription: Subscription | undefined;
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('id');
@@ -120,9 +129,68 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  startEditCustomization(index: number, currentText: string): void {
+    this.editingItemIndex = index;
+    this.customizationEditText = currentText || '';
+    this.cdr.markForCheck();
+  }
+
+  cancelEditCustomization(): void {
+    this.editingItemIndex = null;
+    this.customizationEditText = '';
+    this.cdr.markForCheck();
+  }
+
+  saveCustomization(index: number): void {
+    if (!this.orderId || !this.order) return;
+    this.isSavingCustomization = true;
+    this.cdr.markForCheck();
+
+    this.custSubscription = this.orderService
+      .updateOrderCustomization(this.orderId, index, this.customizationEditText)
+      .subscribe({
+        next: (res) => {
+          this.isSavingCustomization = false;
+          this.notificationService.showSuccess(
+            res.message || 'Personalización guardada exitosamente'
+          );
+          const currentOrder = this.order;
+          if (res.order && currentOrder) {
+            this.order = {
+              ...currentOrder,
+              ...res.order,
+              createdAt: currentOrder.createdAt,
+              updatedAt: currentOrder.updatedAt,
+            };
+          } else if (currentOrder && currentOrder.items[index]) {
+            currentOrder.items[index].customization = this.customizationEditText.trim();
+            currentOrder.items[index].customizationPending = false;
+            currentOrder.customizationPending = currentOrder.items.some(
+              (it) => it.customizationPending === true
+            );
+            this.order = { ...currentOrder };
+          }
+          this.editingItemIndex = null;
+          this.customizationEditText = '';
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.isSavingCustomization = false;
+          console.error('Error saving customization:', err);
+          const errorMsg =
+            err.error?.error || 'Error al guardar la personalización';
+          this.notificationService.showError(errorMsg);
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
   ngOnDestroy(): void {
     if (this.orderSubscription) {
       this.orderSubscription.unsubscribe();
+    }
+    if (this.custSubscription) {
+      this.custSubscription.unsubscribe();
     }
   }
 }

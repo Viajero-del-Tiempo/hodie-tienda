@@ -12,6 +12,7 @@ export interface AdminOrdersResponse {
 export interface AdminOrderResponse {
   success: boolean;
   order: Order;
+  message?: string;
 }
 
 export interface CreateOrderResponse {
@@ -107,5 +108,16 @@ export class OrderService {
    */
   updateOrder(id: string, update: { status: string }): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/admin/orders/${id}`, update);
+  }
+
+  /**
+   * Actualiza el texto de personalización de un ítem del pedido (Admin),
+   * limpiando la bandera 'customizationPending'.
+   */
+  updateOrderCustomization(id: string, itemIndex: number, customization: string): Observable<AdminOrderResponse> {
+    return this.http.patch<AdminOrderResponse>(`${this.apiUrl}/admin/orders/${id}/customization`, {
+      itemIndex,
+      customization,
+    });
   }
 }

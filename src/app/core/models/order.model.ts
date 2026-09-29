@@ -29,11 +29,17 @@ export interface OrderItem {
   price: number;
 
   // Empaque seleccionado por el cliente
-  // Empaque seleccionado por el cliente
   selectedPackaging: PackagingOption | null;
 
   // URL de la imagen para mostrar en el resumen
   imageUrl: string;
+
+  // Datos de personalización
+  customization?: string;
+  customizationPending?: boolean;
+  customizationImageUrl?: string;
+  customizationImagePending?: boolean;
+  instructions?: string;
 }
 
 /**
@@ -65,6 +71,10 @@ export interface Order {
 
   // Estado del comprobante
   pdfDelivered?: boolean; // true: comprobante entregado por WhatsApp; false: pendiente de envío
+
+  // Estado de personalización
+  customizationPending?: boolean; // true: tiene al menos un ítem con personalización pendiente
+  customizationImagePending?: boolean;
 
   // Metadatos
   createdAt: Timestamp;
