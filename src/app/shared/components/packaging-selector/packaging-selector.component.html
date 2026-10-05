@@ -1,0 +1,12 @@
+<h3>Empaque</h3>
+<mat-radio-group [value]="selected?.type ?? null" (change)="choose($event.value)">
+  <mat-radio-button [value]="null">Estándar sin costo</mat-radio-button>
+  @for (option of options; track option.type) {
+    <mat-radio-button [value]="option.type">
+      <span class="packaging-option">
+        @if (option.imageUrl) { <img [src]="option.imageUrl" [alt]="option.name" /> }
+        <span>{{ option.name }} · + {{ option.price | guarani }} por unidad</span>
+      </span>
+    </mat-radio-button>
+  }
+</mat-radio-group>

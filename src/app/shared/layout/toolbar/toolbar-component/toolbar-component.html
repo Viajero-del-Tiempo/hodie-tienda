@@ -65,3 +65,9 @@
     </button>
   </div>
 </mat-toolbar>
+@if (cartService.storageNotice) {
+  <div class="cart-storage-notice" role="status">
+    {{ cartService.storageNotice }}
+    <button type="button" matButton (click)="cartService.dismissStorageNotice()">Entendido</button>
+  </div>
+}

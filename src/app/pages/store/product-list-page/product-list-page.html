@@ -1,56 +1,38 @@
 <div class="store-container section-padding">
   <h1 class="section-title">Nuestra Tienda</h1>
-
-  <div class="store-grid">
-    <!-- Contenido Principal (Lista de Productos) -->
-    <main class="product-list-content">
-      <!-- Barra de Herramientas con Filtro y Ordenamiento -->
-      <div class="list-toolbar">
-        <!-- Filtro de Búsqueda -->
-        <mat-form-field class="filter-search" appearance="outline">
-          <mat-label>Buscar producto...</mat-label>
-          <input matInput (keyup)="applyTextFilter($event)" />
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-
-        <span class="toolbar-spacer"></span>
-
-        <!-- Select de Ordenamiento -->
-        <mat-form-field class="sort-select" appearance="outline">
-          <mat-label>Ordenar por</mat-label>
-          <mat-select (selectionChange)="applySort($event)" value="default">
-            <mat-option value="default">Defecto</mat-option>
-            <mat-option value="price-asc">Precio: Menor a Mayor</mat-option>
-            <mat-option value="price-desc">Precio: Mayor a Menor</mat-option>
-            <mat-option value="name-asc">Nombre: A-Z</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <!-- Cuadrícula de Productos -->
-      <div class="product-grid">
-        @for (product of paginatedProducts; track product.id) {
-        <app-product-card
-          [product]="product"
-          [showAddToCartButton]="false"
-        ></app-product-card>
-        } @empty {
-        <p class="no-results">
-          No se encontraron productos que coincidan con tus filtros.
-        </p>
+  <div class="list-toolbar">
+    <mat-form-field appearance="outline" class="filter-search">
+      <mat-label>Buscar producto</mat-label>
+      <input matInput [(ngModel)]="query" (ngModelChange)="applyFilters()" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Categoría</mat-label>
+      <mat-select [(ngModel)]="categoryId" (selectionChange)="applyFilters()">
+        <mat-option value="">Todas</mat-option>
+        @for (category of categories; track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
         }
-      </div>
-
-      <!-- Paginador -->
-      <mat-paginator
-        [length]="dataSource.data.length"
-        [pageSize]="12"
-        [pageSizeOptions]="[12, 24, 48]"
-        (page)="onPageChange($event)"
-        class="product-list-paginator"
-      >
-      </mat-paginator>
-    </main>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Ordenar por</mat-label>
+      <mat-select [(ngModel)]="sort" (selectionChange)="applyFilters()">
+        <mat-option value="relevance">Relevancia</mat-option>
+        <mat-option value="price-asc">Precio: menor a mayor</mat-option>
+        <mat-option value="price-desc">Precio: mayor a menor</mat-option>
+        <mat-option value="name-asc">Nombre: A–Z</mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
+  @if (categoryError) { <p role="alert">{{ categoryError }}</p> }
+  @if (isLoading) { <mat-spinner diameter="40"></mat-spinner> }
+  @else if (error) { <p role="alert">{{ error }} <button type="button" (click)="load()">Reintentar</button></p> }
+  @else {
+    <div class="product-grid">
+      @for (product of products; track product.id) { <app-product-card [product]="product"></app-product-card> }
+      @empty { <p>No se encontraron productos que coincidan con tus filtros.</p> }
+    </div>
+    <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize"
+      [pageSizeOptions]="[12,24,48]" (page)="onPageChange($event)"></mat-paginator>
+  }
 </div>
-

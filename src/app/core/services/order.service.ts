@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, firstValueFrom } from 'rxjs';
-import { Order } from '../models/order.model';
+import { Order, CreateOrderRequest } from '../models/order.model';
 import { environment } from '../../../environments/environment';
 
 export interface AdminOrdersResponse {
@@ -20,6 +20,9 @@ export interface CreateOrderResponse {
   message: string;
   orderNumber: string;
   orderId: string;
+  total: number;
+  pdfDelivered: boolean;
+  shippingMethod: string;
 }
 
 @Injectable({
@@ -92,7 +95,7 @@ export class OrderService {
    * - Persistir en Firestore mediante Admin SDK
    * - Generar comprobante PDFKit y enviarlo por WhatsApp
    */
-  async createOrder(order: any): Promise<CreateOrderResponse> {
+  async createOrder(order: CreateOrderRequest): Promise<CreateOrderResponse> {
     return await firstValueFrom(
       this.http.post<CreateOrderResponse>(`${this.apiUrl}/orders/order/send`, order)
     );

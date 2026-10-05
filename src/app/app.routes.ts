@@ -28,7 +28,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'store/:id',
+        path: 'store/:slug',
         title: 'Producto',
         loadComponent: () =>
           import('./pages/store/product-detail-page/product-detail-page').then(

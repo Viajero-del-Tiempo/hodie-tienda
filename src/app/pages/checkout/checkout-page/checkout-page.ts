@@ -12,7 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { BillingAddress, ShippingAddress, User } from '@core/models/user.model';
-import { Order, OrderItem, OrderStatus } from '@core/models/order.model';
+import { CreateOrderRequest } from '@core/models/order.model';
+import { variantLabel } from '@core/models/catalog.util';
 import { UserService } from '@core/services/user.service';
 import { OrderService } from '@core/services/order.service';
 import { CartService, Cart } from '@core/services/cart.service';
@@ -53,7 +54,10 @@ export class CheckoutPage implements OnInit {
 
   user: User | null = null;
   cart$: Observable<Cart>;
-  itemCustomizations: Record<string, string> = {};
+  label = variantLabel;
+  isReviewing = false;
+  catalogErrors: string[] = [];
+  catalogNotice = '';
 
   addressForm: FormGroup;
   billingAddressForm: FormGroup;
@@ -81,6 +85,7 @@ export class CheckoutPage implements OnInit {
 
   ngOnInit(): void {
     this.loadInitialData();
+    void this.reviewCart();
   }
 
   loadInitialData(): void {
@@ -257,77 +262,62 @@ export class CheckoutPage implements OnInit {
       });
   }
 
-  async placeOrder(cart: Cart): Promise<void> {
-    if (!this.user || !this.user.addresses || this.user.addresses.length === 0) {
-      this.notificationService.showError('Por favor, completa tu información de envío.');
-      return;
-    }
+  async reviewCart(): Promise<void> {
+    this.isReviewing = true;
+    try {
+      const result = await this.cartService.refreshCatalog();
+      this.catalogErrors = result.errors;
+      if (result.changed) this.catalogNotice = 'Actualizamos los precios y datos del carrito. Revisá el resumen antes de confirmar.';
+    } catch { this.catalogErrors = ['No se pudo revisar el catálogo. Intentá nuevamente.']; }
+    finally { this.isReviewing = false; this.cdr.detectChanges(); }
+  }
 
+  async placeOrder(_cart: Cart): Promise<void> {
+    if (this.isLoading || this.isReviewing) return;
+    if (!this.user?.addresses?.length) {
+      this.notificationService.showError('Por favor, completa tu información de envío.'); return;
+    }
     this.isLoading = true;
-
-    let officialOrderNumber: string | undefined;
-
+    let response;
     try {
-      const orderItems: OrderItem[] = cart.items.map((item) => {
-        const custText = (this.itemCustomizations[item.itemId] || '').trim();
-        return {
-          productId: item.product.id,
-          productName: item.product.name,
-          productSku: item.product.sku,
-          quantity: item.quantity,
-          price: item.product.price,
-          selectedPackaging: item.selectedPackaging || null,
-          imageUrl: item.product.imageUrls?.[0] || '',
-          customization: custText,
-          customizationPending: !custText,
-        };
-      });
-
-      // Usamos una dirección de envío por defecto (la primera)
-      const shippingAddress = this.user.addresses[0];
-
-      // Calculamos el costo de envío (por ahora fijo o 0, según lógica de negocio)
-      const shippingCost = 0;
-      const total = cart.subtotal + shippingCost;
-
-      const newOrder = {
-        userId: this.user.uid,
-        userDisplayName: this.user.displayName,
-        userPhoneNumber: this.user.phoneNumber,
-        items: orderItems,
-        shippingAddress: shippingAddress,
-        status: OrderStatus.Pending,
-        subtotal: cart.subtotal,
-        shippingCost: shippingCost,
-        total: total,
+      const review = await this.cartService.refreshCatalog();
+      this.catalogErrors = review.errors;
+      if (!review.valid) return;
+      if (review.changed) {
+        this.catalogNotice = 'Actualizamos los precios y datos del carrito. Revisá el resumen y confirmá nuevamente.';
+        return;
+      }
+      const cart = this.cartService.snapshot;
+      if (!cart.items.length) return;
+      const payload: CreateOrderRequest = {
+        items: cart.items.map(item => ({
+          productId: item.productId, variantId: item.variantId, quantity: item.quantity,
+          packagingType: item.selectedPackaging?.type ?? null,
+          customization: item.customization, customizationPending: item.customizationPending,
+          customizationImagePending: item.product.customization.allowed && item.product.customization.allowsImage,
+        })),
+        shippingAddress: this.user.addresses[0],
       };
-
-      // 1. Crear el pedido en el backend (valida, asigna orderNumber atómico, persiste y envía comprobante PDF con datos bancarios)
-      const res = await this.orderService.createOrder(newOrder);
-      officialOrderNumber = res.orderNumber;
+      response = await this.orderService.createOrder(payload);
     } catch (error) {
-      console.error('Error placing order:', error);
-      this.notificationService.showError(
-        'Hubo un error al procesar tu pedido. Inténtalo de nuevo.'
-      );
-      this.isLoading = false;
-      this.cdr.detectChanges();
+      const failure = error as { status?: number; error?: { error?: string; field?: string } };
+      if (failure.status === 400) {
+        const message = failure.error?.error || 'Revisá los datos de tu pedido.';
+        this.catalogErrors = [message];
+        this.notificationService.showError(message);
+      } else {
+        this.notificationService.showError('Hubo un error al procesar tu pedido. Inténtalo de nuevo.');
+      }
       return;
-    }
+    } finally { this.isLoading = false; this.cdr.detectChanges(); }
 
-    // 2. Si el pedido fue creado con éxito, cualquier falla posterior (limpieza de carrito o navegación)
-    // nunca debe mostrar un error de pedido fallido al cliente
+    // Desde aquí el pedido ya está guardado. Una falla de navegación no lo revierte.
     try {
-      this.notificationService.showSuccess(
-        `¡Pedido ${officialOrderNumber} realizado con éxito! Te contactaremos por WhatsApp.`
-      );
+      this.notificationService.showSuccess('¡Pedido ' + response.orderNumber + ' realizado con éxito! Te contactaremos por WhatsApp.');
       this.cartService.clearCart();
-      await this.router.navigate(['/checkout/success'], { queryParams: { order: officialOrderNumber } });
-    } catch (postOrderError) {
-      console.error('Error in post-order tasks (cart clear or navigation):', postOrderError);
-    } finally {
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    }
+      await this.router.navigate(['/checkout/success'], {
+        queryParams: { order: response.orderNumber }, state: { orderTotal: response.total },
+      });
+    } catch (error) { console.error('Error posterior a guardar el pedido:', error); }
   }
 }

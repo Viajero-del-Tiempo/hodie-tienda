@@ -10,6 +10,12 @@
     <p>Revisa tu pedido y completa los datos para finalizar la compra.</p>
   </header>
 
+  @if (catalogNotice) { <p role="status">{{ catalogNotice }}</p> }
+  @for (error of catalogErrors; track $index) { <p role="alert">{{ error }}</p> }
+  @if (catalogErrors.length) {
+    <a matButton routerLink="/cart">Corregir carrito</a>
+    <button matButton (click)="reviewCart()" [disabled]="isReviewing">Revisar nuevamente</button>
+  }
   <div class="checkout-layout">
     <!-- Columna izquierda: Formulario o Detalles del pedido -->
     <div class="checkout-main">
@@ -210,27 +216,22 @@
             @for (item of cart.items; track item.itemId) {
             <mat-list-item class="checkout-cart-item">
               <span matListItemTitle>{{ item.product.name }} ({{ item.quantity }}x)</span>
+              <span matListItemLine>{{ label(item.product,item.variant) }}</span>
               <span matListItemLine class="item-details">
                 @if (item.selectedPackaging) {
-                <small>Empaque: {{ item.selectedPackaging.type }}</small>
+                <small>Empaque: {{ item.selectedPackaging.name }}</small>
                 }
               </span>
               <span matListItemMeta class="item-price">{{
                 item.unitPrice * item.quantity | guarani
               }}</span>
             </mat-list-item>
-            <div class="item-customization-container">
-              <mat-form-field appearance="outline" class="full-width customization-input-field">
-                <mat-label>¿Qué querés que diga? (opcional)</mat-label>
-                <input
-                  matInput
-                  maxlength="500"
-                  [(ngModel)]="itemCustomizations[item.itemId]"
-                  placeholder="Ej: Para Mamá con amor - Juan"
-                />
-                <mat-hint>Si querés grabar un logo o imagen, envianoslo por WhatsApp después de tu compra</mat-hint>
-              </mat-form-field>
-            </div>
+            @if (item.customization) {
+              <p class="customization-text">Texto: {{ item.customization }}</p>
+            } @else if (item.customizationPending) { <p>Texto pendiente de personalización.</p> }
+            @if (item.product.customization.allowed && item.product.customization.allowsImage) {
+              <p>Podés enviar tu imagen por WhatsApp después de la compra.</p>
+            }
             <mat-divider></mat-divider>
             } @empty {
             <p class="empty-cart-message">Tu carrito está vacío.</p>
@@ -246,10 +247,10 @@
             </div>
             <div class="summary-row">
               <span>Envío</span>
-              <strong>Pago contra entrega</strong>
+              <span>Gratis en Minga Guazú; resto del país, flete contra entrega.</span>
             </div>
             <div class="summary-row grand-total">
-              <span>Total</span>
+              <span>Total informativo</span>
               <strong>{{ cart.subtotal | guarani }}</strong>
             </div>
           </div>
@@ -257,7 +258,7 @@
 
         @if (user.profile_status === 'complete' && cart.items.length > 0) {
         <mat-card-actions>
-          <button matButton="filled" matIconSuffix class="full-width" (click)="placeOrder(cart)">
+          <button matButton="filled" matIconSuffix class="full-width" (click)="placeOrder(cart)" [disabled]="isReviewing || isLoading || catalogErrors.length > 0">
             <mat-icon>check_circle</mat-icon>
             Confirmar Pedido
           </button>

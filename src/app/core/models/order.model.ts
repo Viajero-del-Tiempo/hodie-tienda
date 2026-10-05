@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
-import { PackagingOption } from './packaging.model';
+import { CatalogPackagingOption } from './catalog.model';
 import { ShippingAddress } from './user.model';
 
 /**
@@ -21,6 +21,9 @@ export enum OrderStatus {
  */
 export interface OrderItem {
   productId: string;
+  variantId?: string;
+  variantLabel?: string;
+  sku?: string;
   productName: string;
   productSku: string;
   quantity: number;
@@ -29,7 +32,7 @@ export interface OrderItem {
   price: number;
 
   // Empaque seleccionado por el cliente
-  selectedPackaging: PackagingOption | null;
+  selectedPackaging: CatalogPackagingOption | null;
 
   // URL de la imagen para mostrar en el resumen
   imageUrl: string;
@@ -40,6 +43,21 @@ export interface OrderItem {
   customizationImageUrl?: string;
   customizationImagePending?: boolean;
   instructions?: string;
+}
+
+export interface CreateOrderItem {
+  productId: string;
+  variantId: string;
+  quantity: number;
+  packagingType: string | null;
+  customization?: string;
+  customizationPending?: boolean;
+  customizationImagePending?: boolean;
+}
+
+export interface CreateOrderRequest {
+  items: CreateOrderItem[];
+  shippingAddress: ShippingAddress;
 }
 
 /**

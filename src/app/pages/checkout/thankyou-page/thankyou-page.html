@@ -9,6 +9,8 @@
 
     <div class="order-badge" *ngIf="orderNumber">CÓDIGO DE PEDIDO: {{ orderNumber }}</div>
 
+    @if (orderTotal !== null) { <p>Total del pedido: {{ orderTotal | guarani }}</p> }
+
     <p class="description">
       Tu pedido ha sido recibido con éxito y ya está siendo procesado por nuestro equipo.
     </p>

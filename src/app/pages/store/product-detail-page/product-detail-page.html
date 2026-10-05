@@ -1,130 +1,53 @@
 <div class="detail-container section-padding">
-  <!-- Spinner de Carga -->
-  @if (isLoading) {
-  <div class="loading-spinner">
-    <mat-spinner></mat-spinner>
-    <p>Cargando producto...</p>
-  </div>
-  }
-
-  <!-- Contenido del Producto -->
-  @if (product && !isLoading) {
-  <div class="detail-content">
-    <!-- Botón de Volver -->
-    <button matButton="outlined" (click)="router.navigate(['/store'])" class="back-button">
-      <mat-icon>arrow_back</mat-icon>
-      Volver a la tienda
-    </button>
-
-    <!-- Grid Principal -->
+  @if (isLoading) { <mat-spinner></mat-spinner> }
+  @else if (error) { <p role="alert">{{ error }}</p><a matButton routerLink="/store">Volver al catálogo</a> }
+  @else if (product) {
+    <a matButton routerLink="/store">Volver al catálogo</a>
     <div class="detail-grid">
-      <!-- 1. Columna de Imágenes -->
       <section class="image-gallery">
-        <div class="main-image">
-          <img
-            [src]="selectedImageUrl || 'https://placehold.co/600x600/eeeeee/aaaaaa?text=Producto'"
-            [alt]="product.name"
-          />
-        </div>
+        @if (selectedImageUrl) { <img class="variant-main-image" [src]="selectedImageUrl" [alt]="product.name" /> }
         <div class="thumbnail-grid">
-          @for (image of product.imageUrls; track $index) {
-          <img
-            [src]="image"
-            [alt]="'Miniatura ' + ($index + 1)"
-            class="thumbnail"
-            [class.active]="image === selectedImageUrl"
-            (click)="changeMainImage(image)"
-          />
+          @for (image of selectedVariant?.imageUrls ?? []; track $index) {
+            <button type="button" (click)="selectedImageUrl = image" [attr.aria-label]="'Ver imagen ' + ($index + 1)">
+              <img [src]="image" [alt]="product.name" class="thumbnail" />
+            </button>
           }
         </div>
       </section>
-
-      <!-- 2. Columna de Información -->
       <section class="product-info">
-        <h1 class="product-title">{{ product.name }}</h1>
-        <p class="product-description">{{ product.description }}</p>
-        <div class="price-container">
-          <div class="product-price">
-            <span class="price-label">Precio: </span>
-            <span class="item-price-value">{{ product.price | guarani }}</span>
-          </div>
-        </div>
-
-        <!-- Opciones de Empaque -->
-        <div class="packaging-section">
-          <h3 class="section-subtitle">Elige un Empaque (Opcional)</h3>
-          <mat-radio-group
-            (change)="onRadioChange($event)"
-            class="packaging-options"
-            [(ngModel)]="selectedPackaging"
-            (ngModelChange)="onPackagingChange()"
-          >
-            @for (option of packagingOptions; track option.type) {
-            <mat-radio-button
-              [value]="option"
-              class="packaging-option"
-              [class.active]="selectedPackaging?.type === option.type"
-            >
-              <div class="option-content">
-                <img [src]="option.imageUrl" [alt]="option.name" class="option-image" />
-                <div class="option-details">
-                  <strong>{{ option.name }}</strong>
-                  <span>{{ option.description }}</span>
-                  <span class="option-price">+ {{ option.price | guarani }}</span>
-                </div>
-              </div>
-            </mat-radio-button>
-            }
-            <!-- Opción para no seleccionar ninguno -->
-            <mat-radio-button [value]="null" class="packaging-option">
-              <div class="option-content">
-                <div class="option-details">
-                  <strong>Ninguno</strong>
-                  <span>El producto se entregará sin empaque de regalo.</span>
-                </div>
-              </div>
-            </mat-radio-button>
-          </mat-radio-group>
-        </div>
-
-        <!-- Precio del Producto -->
-        <div class="price-container">
-          <div class="total-price">
-            <span class="price-label">SubTotal:</span>
-            <span class="price-value">{{ totalPrice | guarani }}</span>
-          </div>
-        </div>
-
-        <!-- Cantidad y Botón de Añadir al Carrito -->
-        <div class="actions-container">
-          <app-quantity-input
-            [maxQuantity]="maxAvailableQuantity"
-            (quantityChange)="onQuantityChange($event)"
-          ></app-quantity-input>
-          <button
-            matButton="filled"
-            class="add-to-cart-button"
-            (click)="addToCart()"
-            [disabled]="product.stock === 0"
-          >
-            <mat-icon>add_shopping_cart</mat-icon>
-            <span>{{ product.stock > 0 ? 'Añadir al Carrito' : 'Sin Stock' }}</span>
-          </button>
-        </div>
+        <h1>{{ product.name }}</h1><p>{{ product.description }}</p>
+        @for (attribute of product.attributes | keyvalue; track attribute.key) {
+          <p><strong>{{ attribute.key }}:</strong> {{ attribute.value }}</p>
+        }
+        @if (selectedVariant) {
+          <p class="product-price">{{ selectedVariant.price | guarani }}</p>
+          <p>{{ label(product,selectedVariant) }} · Disponibles: {{ selectedVariant.stock }}</p>
+        } @else { <p class="product-price">Desde {{ product.priceFrom | guarani }}</p> }
+        <app-variant-selector [product]="product" (variantChange)="onVariantChange($event)"></app-variant-selector>
+        @if (!hasStock) { <p>Agotado</p> }
+        <app-packaging-selector [options]="product.packagingOptions" [(selected)]="selectedPackaging"></app-packaging-selector>
+        @if (product.customization.allowed) {
+          @if (product.customization.notes) { <p>{{ product.customization.notes }}</p> }
+          @if (allowsText) {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>¿Qué querés que diga? (opcional)</mat-label>
+              <textarea matInput [(ngModel)]="customization" rows="2" [attr.aria-invalid]="textInvalid"></textarea>
+              <mat-hint>{{ length(customization.trim()) }} / {{ product.customization.maxChars }} caracteres. Si lo dejás vacío, queda pendiente.</mat-hint>
+            </mat-form-field>
+            @if (textInvalid) { <p role="alert">El texto supera el máximo permitido.</p> }
+          }
+          @if (product.customization.allowsImage) { <p>Podés enviar tu imagen por WhatsApp después de la compra.</p> }
+        }
+        <app-quantity-input [initialQuantity]="quantity" [maxQuantity]="maxAvailableQuantity"
+          (quantityChange)="quantity = $event"></app-quantity-input>
+        @if (selectedVariant) { <p>Subtotal: {{ unitPrice * quantity | guarani }}</p> }
+        <button matButton="filled" (click)="addToCart()" [disabled]="!canAdd">Añadir al carrito</button>
+        @if (selectedVariant && maxAvailableQuantity === 0) { <p>Ya tenés todas las unidades disponibles en tu carrito.</p> }
       </section>
     </div>
-  </div>
-  }
-
-  <!-- Producto No Encontrado -->
-  @if (!product && !isLoading) {
-  <div class="not-found">
-    <h2>Producto no encontrado</h2>
-    <p>El producto que buscas no existe o no está disponible.</p>
-    <button matButton="elevated" (click)="goBack()">
-      <mat-icon>arrow_back</mat-icon>
-      Volver a la tienda
-    </button>
-  </div>
+  } @else {
+    <h1>Este producto ya no está disponible</h1>
+    <p>Podés encontrar otras opciones en el catálogo.</p>
+    <a matButton="filled" routerLink="/store">Ver catálogo</a>
   }
 </div>

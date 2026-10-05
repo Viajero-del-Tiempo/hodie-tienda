@@ -1,0 +1,15 @@
+<div class="variant-selectors">
+  @for (axis of product.optionNames; track axis; let index = $index) {
+    <mat-form-field appearance="outline">
+      <mat-label>{{ axis }}</mat-label>
+      <mat-select [value]="selected[axis]" [disabled]="index > 0 && !selected[product.optionNames[index - 1]]"
+        (selectionChange)="choose(axis, $event.value, index)">
+        @for (choice of choices(axis, index); track choice.value) {
+          <mat-option [value]="choice.value" [disabled]="!choice.available">
+            {{ choice.value }}{{ choice.available ? '' : ' — Agotado' }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+</div>

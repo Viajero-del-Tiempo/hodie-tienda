@@ -95,6 +95,9 @@
             ],
             "styles": [
               "src/styles.scss"
+            ],
+            "include": [
+              "../test/**/*.spec.ts"
             ]
           }
         }
