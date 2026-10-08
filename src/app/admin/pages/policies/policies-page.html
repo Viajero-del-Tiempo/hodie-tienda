@@ -1,0 +1,14 @@
+<header><h1>Políticas</h1><button type="button" (click)="edit()" [disabled]="saving">Nueva política</button></header>
+@if (loading) { <p role="status">Cargando políticas…</p> }
+<div class="table-scroll"><table><thead><tr><th>Tema</th><th>Título</th><th>Acción</th></tr></thead><tbody>
+  @for (policy of policies; track policy.id) { <tr><td>{{ policy.id }}</td><td>{{ policy.title }}</td><td><button type="button" (click)="edit(policy)" [disabled]="saving">Editar</button></td></tr> }
+</tbody></table></div>
+@if (error) { <p class="error" role="alert">{{ error }}</p> }
+@if (notice) { <p role="status">{{ notice }}</p> }
+<form [formGroup]="form" (ngSubmit)="save()"><fieldset [disabled]="saving"><legend>{{ existingId ? 'Editar política' : 'Crear política' }}</legend>
+  <label>Tema / ID estable <input formControlName="id" [readOnly]="!!existingId" required /></label><small role="alert">{{ message(form.get('id')) }}</small>
+  <p>Elegí el tema que necesites. Usá letras minúsculas, números y guiones. El ID se conserva al editar.</p>
+  <label>Título <input formControlName="title" required /></label><small role="alert">{{ message(form.get('title')) }}</small>
+  <label>Texto <textarea formControlName="text" required rows="10"></textarea></label><small role="alert">{{ message(form.get('text')) }}</small>
+  <button type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar política' }}</button>
+</fieldset></form>

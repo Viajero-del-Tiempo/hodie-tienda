@@ -49,9 +49,9 @@ en Angular usa `environment.development.ts`: configurar localmente
 `src/environments/` está excluida de Git y se conserva su configuración actual;
 este ajuste local no forma parte de la entrega. El build de producción usa
 `environment.ts`, con la URL productiva.
-No crear fixtures desde el navegador en Firestore productivo. El CRUD nuevo del
-panel se completa en entrega 5; hasta entonces los fixtures automatizados son
-la forma de verificar el modelo nuevo sin cargar productos reales.
+No crear fixtures desde el navegador en Firestore productivo. El panel nuevo
+de 5b usa las APIs de la 5a; para cargar ejemplos manuales usá la configuración
+`emulator` y el recorrido de `VERIFICACION-panel-catalogo.md`.
 
 - En escritorio y móvil, revisar búsqueda, categorías, paginación y orden por
   relevancia/precio/nombre. Cada producto aparece una sola vez y sus tarjetas
@@ -95,8 +95,9 @@ es `0900000001`; el OTP aparece en la terminal del backend. No se envía
 WhatsApp. Los datos y precios de ejemplo están en fixtures de `test/`.
 
 Desde 4b-1, este servidor local cubre también checkout, pedidos propios/PDF y
-lecturas administrativas de pedidos. El panel de productos
-nuevo se implementa en 5b y el panel viejo no es compatible con este CRUD.
+lecturas administrativas de pedidos. El panel nuevo de productos, categorías
+y políticas de 5b usa este CRUD y la subida local de imágenes. Su recorrido
+está en `docs/VERIFICACION-panel-catalogo.md`.
 
 La guía completa está en `hodie-node-app/docs/VERIFICACION-catalogo-local.md`.
 Nada de esta rama se deploya antes de la entrega 6 junto con el agente nuevo.

@@ -34,17 +34,25 @@ export function serverFieldError(form: FormGroup, field: string | undefined, mes
   const path = prefix ? field?.startsWith(prefix + '.') ? field.slice(prefix.length + 1) : undefined : field;
   const control = path ? form.get(path) : null;
   if (!control) return false;
+  setServerControlError(control, message);
+  return true;
+}
+// Los grupos/arreglos regeneran su objeto value al montar los controles.
+// La identidad de ese objeto no representa un cambio en los datos del campo.
+export function serverValueSnapshot(value: unknown): unknown {
+  return value !== null && typeof value === 'object' ? JSON.stringify(value) : value;
+}
+export function setServerControlError(control: AbstractControl, message: string): void {
   const previous = serverValidators.get(control);
   if (previous) control.removeValidators(previous);
   // Angular recalcula la validez al montar el editor y reemplaza los errores de
   // setErrors(). El rechazo se conserva mientras el campo tenga el mismo valor.
-  const rejectedValue = control.value;
-  const validator: ValidatorFn = current => Object.is(current.value, rejectedValue) ? { server: message } : null;
+  const rejectedValue = serverValueSnapshot(control.value);
+  const validator: ValidatorFn = current => Object.is(serverValueSnapshot(current.value), rejectedValue) ? { server: message } : null;
   serverValidators.set(control, validator);
   control.addValidators(validator);
   control.updateValueAndValidity({ emitEvent: false });
   control.markAsTouched();
-  return true;
 }
 export function fieldMessage(form: FormGroup, name: string): string {
   const control = form.get(name);

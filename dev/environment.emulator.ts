@@ -11,5 +11,4 @@ export const environment = {
     messagingSenderId: '000000000000',
     appId: 'demo-app',
   },
-  cloudinary: { cloudName: '', uploadPreset: '' },
 };

@@ -1,0 +1,93 @@
+<header><h1>{{ isEditMode ? 'Editar producto' : 'Crear producto' }}</h1><a routerLink="/admin/products">Volver a productos</a></header>
+@if (loading) { <p role="status">Cargando catálogo…</p> }
+@if (error) { <p role="alert" class="error">{{ error }}</p> }
+@if (notice) { <p role="status">{{ notice }}</p> }
+@if (conflict) {
+  <section class="conflict"><h2>El producto cambió desde que abriste el editor</h2>
+    @for (change of changes; track change.field) { <p>{{ change.sku ? 'SKU ' + change.sku + ' — ' : '' }}{{ changeLabel(change.field) }}@if (change.previous !== undefined || change.current !== undefined) { : {{ change.previous | json }} → {{ change.current | json }} }</p> }
+    <button type="button" (click)="inspectConflict()" [disabled]="loading || imagesPending">Consultar versión actual</button>
+    @if (latest) {
+      <p>Se incorporarán los cambios actuales de los campos que no editaste. Los campos modificados en ambas versiones requieren una elección.</p>
+      @for (collision of collisions; track collision.field) {
+        <fieldset><legend>{{ collision.label }}</legend><p>Al abrir: {{ collision.previous | json }}</p>
+          <label><input type="radio" [name]="collision.field" [checked]="choices[collision.field] === 'current'" (change)="resolve(collision.field, 'current')" /> Usar actual: {{ collision.current | json }}</label>
+          <label><input type="radio" [name]="collision.field" [checked]="choices[collision.field] === 'draft'" (change)="resolve(collision.field, 'draft')" /> Conservar borrador: {{ collision.draft | json }}</label>
+        </fieldset>
+      }
+      <button type="button" (click)="applyMerge()" [disabled]="!canMerge || imagesPending">Actualizar borrador para revisarlo</button>
+      <button type="button" (click)="discardDraft()" [disabled]="imagesPending">Descartar borrador y cargar actual</button>
+    }
+  </section>
+}
+@if (!loading && (!isEditMode || baseline)) {
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <fieldset [disabled]="saving"><legend>Datos generales</legend>
+      <label>Nombre <input formControlName="name" required /></label><small role="alert">{{ message(productForm.get('name')) }}</small>
+      <label>Slug <input formControlName="slug" required /></label><small role="alert">{{ message(productForm.get('slug')) }}</small>
+      <p>El slug define el enlace público. Al editar el nombre, el enlace se conserva.</p>
+      <label>Descripción <textarea formControlName="description"></textarea></label><small role="alert">{{ message(productForm.get('description')) }}</small>
+      <label>Categoría <select formControlName="categoryId" required><option value="">Elegí una categoría activa</option>
+        @for (category of categories; track category.id) { <option [value]="category.id" [disabled]="!category.active">{{ category.name }}{{ category.active ? '' : ' (inactiva)' }}</option> }
+      </select></label><small role="alert">{{ message(productForm.get('categoryId')) }}</small><a routerLink="/admin/categories">Administrar categorías</a>
+      <label class="check"><input type="checkbox" formControlName="active" /> Producto activo</label><small role="alert">{{ message(productForm.get('active')) }}</small>
+    </fieldset>
+    <fieldset [disabled]="saving"><legend>Etiquetas</legend>
+      @for (tag of tags.controls; track key(tag); let i = $index) {
+        <div class="row"><label>Etiqueta {{ i + 1 }} <input [formControl]="tag" required /></label><button type="button" (click)="tags.removeAt(i)">Quitar</button><small role="alert">{{ message(tag) }}</small></div>
+      }
+      <button type="button" (click)="addTag()" [disabled]="tags.length >= 20">Agregar etiqueta</button><small role="alert">{{ message(tags) }}</small>
+    </fieldset>
+    <fieldset [disabled]="saving"><legend>Atributos</legend>
+      @for (row of attributes.controls; track key(row); let i = $index) {
+        <div class="row" [formGroup]="row"><label>Atributo <input formControlName="key" required /></label><small role="alert">{{ message(row.get('key')) }}</small>
+          <label>Valor <input formControlName="value" required /></label><small role="alert">{{ message(row.get('value')) }}</small><button type="button" (click)="attributes.removeAt(i)">Quitar atributo</button></div>
+      }
+      <button type="button" (click)="addAttribute()">Agregar atributo</button><small role="alert">{{ message(attributes) }}</small>
+    </fieldset>
+    <fieldset [disabled]="saving"><legend>Ejes de opciones</legend>
+      @for (axis of axes.controls; track key(axis); let i = $index) {
+        <div class="row"><label>Nombre del eje <input [formControl]="axis" required (blur)="syncOptions()" /></label><small role="alert">{{ message(axis) }}</small><button type="button" (click)="removeAxis(i)">Quitar eje</button></div>
+      }
+      <button type="button" (click)="addAxis()">Agregar eje</button><small role="alert">{{ message(axes) }}</small>
+    </fieldset>
+    <fieldset [disabled]="saving"><legend>Variantes</legend>
+      <p>Una variante guardada conserva su ID y solo puede desactivarse. El servidor verifica SKU y slug también entre productos inactivos.</p>
+      <div class="table-scroll"><table><thead><tr><th>Opciones</th><th>SKU</th><th>Precio (Gs.)</th><th>Stock</th><th>Activa</th><th>Imágenes</th><th>Acciones</th></tr></thead><tbody>
+        @for (row of variants.controls; track key(row); let i = $index) {
+          <tr [formGroup]="row" [attr.data-variant-index]="i"><td>
+            @for (axis of axes.controls; track key(axis)) { @if (syncedAxis(axis)) { <label>{{ axis.value }} <input [formControl]="optionControl(row, axis)" required /></label><small role="alert">{{ message(optionControl(row, axis)) }}</small> } }
+            <small role="alert">{{ message(row.get('options')) }}</small>
+          </td><td><label>SKU <input formControlName="sku" required /></label><small role="alert">{{ message(row.get('sku')) }}</small></td>
+          <td><label>Precio <input type="number" formControlName="price" min="1" step="1" required /></label><small role="alert">{{ message(row.get('price')) }}</small></td>
+          <td><label>Stock <input type="number" formControlName="stock" min="0" step="1" required /></label><small role="alert">{{ message(row.get('stock')) }}</small></td>
+          <td><label class="check"><input type="checkbox" formControlName="active" /> Activa</label><small role="alert">{{ message(row.get('active')) }}</small></td>
+          <td><app-catalog-images [control]="row.get('imageUrls')!" (pendingChange)="pending(row.get('imageUrls')!, $event)" /></td>
+          <td>@if (isSaved(row)) { <small>ID: {{ row.get('id')!.value }}</small> } @else { <button type="button" (click)="removeVariant(i)">Quitar fila nueva</button> }
+            <small role="alert">{{ message(row) }}</small><small role="alert">{{ message(row.get('id')) }}</small></td></tr>
+        }
+      </tbody></table></div>
+      <button type="button" (click)="addVariant()">Agregar variante</button><small role="alert">{{ message(variants) }}</small>
+    </fieldset>
+    <fieldset [disabled]="saving" formGroupName="customization"><legend>Personalización</legend>
+      <label class="check"><input type="checkbox" formControlName="allowed" /> Permitir personalización</label><small role="alert">{{ message(customization.get('allowed')) }}</small>
+      <label class="check"><input type="checkbox" formControlName="allowsText" /> Permitir texto</label><small role="alert">{{ message(customization.get('allowsText')) }}</small>
+      @if (customization.get('allowsText')!.value) { <label>Máximo de caracteres <input type="number" formControlName="maxChars" min="1" max="500" step="1" required /></label><small role="alert">{{ message(customization.get('maxChars')) }}</small> }
+      <label class="check"><input type="checkbox" formControlName="allowsImage" /> Permitir imagen</label><small role="alert">{{ message(customization.get('allowsImage')) }}</small>
+      <label>Indicaciones para el cliente <textarea formControlName="notes"></textarea></label><small role="alert">{{ message(customization.get('notes')) }}</small><small role="alert">{{ message(customization) }}</small>
+    </fieldset>
+    <fieldset [disabled]="saving"><legend>Empaques propios del producto</legend>
+      @for (row of packages.controls; track key(row); let i = $index) {
+        <fieldset [formGroup]="row" [attr.data-packaging-index]="i"><legend>Empaque {{ i + 1 }}</legend>
+          <label>Identificador <input formControlName="type" required /></label><small role="alert">{{ message(row.get('type')) }}</small>
+          <label>Nombre público <input formControlName="name" required /></label><small role="alert">{{ message(row.get('name')) }}</small>
+          <label>Precio (Gs.) <input type="number" formControlName="price" min="0" step="1" required /></label><small role="alert">{{ message(row.get('price')) }}</small>
+          <app-catalog-images [control]="row.get('imageUrl')!" (pendingChange)="pending(row.get('imageUrl')!, $event)" />
+          <button type="button" (click)="packages.removeAt(i)">Quitar empaque</button><small role="alert">{{ message(row) }}</small>
+        </fieldset>
+      }
+      <button type="button" (click)="addPackage()">Agregar empaque</button><small role="alert">{{ message(packages) }}</small>
+    </fieldset>
+    <button type="submit" [disabled]="saving || loading || conflict || imagesPending">{{ saving ? 'Guardando…' : 'Guardar producto' }}</button>
+    @if (imagesPending) { <p role="status">Terminá o cancelá las subidas pendientes para guardar.</p> }
+  </form>
+}
