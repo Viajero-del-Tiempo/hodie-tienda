@@ -80,3 +80,26 @@ la forma de verificar el modelo nuevo sin cargar productos reales.
   textos y referencias al recargar, recalculando identidad y totales.
 
 Las salidas de tests y build las obtiene el dueño al ejecutar estos comandos.
+
+
+## Entorno local con Firestore Emulator (entrega 5a)
+
+En `hodie-node-app`, ejecutá `npm run catalog:local`. Requiere Java 21 y
+Firebase CLI; genera el entorno Angular de emulador desde la plantilla
+versionada sin cambiar las configuraciones actuales. Después, en este
+repositorio, ejecutá `npm start -- --configuration emulator`.
+
+La tienda apunta al backend local (3000); Firestore usa el proyecto ficticio
+`demo-hodie-catalogo` (8080), con UI en 4000. El número ficticio para login
+es `0900000001`; el OTP aparece en la terminal del backend. No se envía
+WhatsApp. Los datos y precios de ejemplo están en fixtures de `test/`.
+
+Desde 4b-1, este servidor local cubre también checkout, pedidos propios/PDF y
+lecturas administrativas de pedidos. El panel de productos
+nuevo se implementa en 5b y el panel viejo no es compatible con este CRUD.
+
+La guía completa está en `hodie-node-app/docs/VERIFICACION-catalogo-local.md`.
+Nada de esta rama se deploya antes de la entrega 6 junto con el agente nuevo.
+
+Las pantallas de checkout, Mi perfil y Mis pedidos de 4b-2 se recorren con la
+guía `docs/VERIFICACION-perfil-tienda.md`, que incluye los dos clientes locales.

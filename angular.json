@@ -59,6 +59,17 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
+            },
+            "emulator": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.emulator.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -71,6 +82,9 @@
             },
             "development": {
               "buildTarget": "hodie-tienda:build:development"
+            },
+            "emulator": {
+              "buildTarget": "hodie-tienda:build:emulator"
             }
           },
           "defaultConfiguration": "development"

@@ -81,11 +81,13 @@
         </mat-card-header>
         <mat-card-content>
           <p class="shipping-address">
+            {{ order.shippingAddress.recipientName }} <br />
             {{ order.shippingAddress.street }} <br />
             {{ order.shippingAddress.city }}, {{ order.shippingAddress.department }} <br />
             {{ order.shippingAddress.postalCode }} <br />
             Paraguay
           </p>
+          @if (order.shippingMethod === 'transportadora_contra_entrega' && order.shippingAddress.recipientDocument) { <p>Cédula del destinatario: {{ order.shippingAddress.recipientDocument }}</p> }
           @if (order.shippingAddress.instructions) {
           <p class="shipping-instructions">
             <strong>Instrucciones:</strong> {{ order.shippingAddress.instructions }}
@@ -97,6 +99,7 @@
 
     <!-- Columna Derecha (Productos y Resumen) -->
     <div class="grid-col-span-1">
+      <mat-card class="detail-card card-outline-color" appearance="outlined"><mat-card-content><app-billing-summary [billing]="order.billing" [allowCopy]="true" /></mat-card-content></mat-card>
       <!-- Tarjeta: Productos -->
       <mat-card class="detail-card card-outline-color" appearance="outlined">
         <mat-card-header>
@@ -104,7 +107,7 @@
         </mat-card-header>
         <mat-card-content>
           <mat-list role="list" class="product-list">
-            @for(item of order.items; track item.productId; let idx = $index) {
+            @for(item of order.items; track $index; let idx = $index) {
             <mat-list-item role="listitem" class="product-item">
               <span matListItemTitle>{{ item.productName }}</span>
               <span matListItemLine>Código: {{ item.productSku }}</span>

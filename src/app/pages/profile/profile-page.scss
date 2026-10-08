@@ -1,0 +1,10 @@
+.profile { max-width: 850px; margin: auto; padding: 24px 16px 48px; }
+header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+mat-card { margin: 20px 0; }
+mat-card-content { padding: 20px; }
+mat-form-field { display: block; }
+article { border-bottom: 1px solid #ddd; padding: 8px 0 16px; overflow-wrap: anywhere; }
+.editor, .conflict { padding: 16px; border: 1px solid #b4771b; border-radius: 8px; margin: 16px 0; }
+.error { color: #9c2525; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+small { display: block; }

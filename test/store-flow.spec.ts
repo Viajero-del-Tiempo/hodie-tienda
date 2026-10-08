@@ -15,6 +15,9 @@ import { CartService, CART_STORAGE } from '../src/app/core/services/cart.service
 import { NotificationService } from '../src/app/core/services/notification.service';
 import { AuthService } from '../src/app/core/auth/auth.service';
 import { UserService } from '../src/app/core/services/user.service';
+import { OrderService } from '../src/app/core/services/order.service';
+import { ShippingFormComponent } from '../src/app/shared/components/shipping-form/shipping-form.component';
+import { userFixture, shippingOptions } from './helpers/customer-fixtures';
 import { MemoryStorage, productFixture } from './helpers/catalog-fixtures';
 
 describe('Tienda: detalle, carrito y confirmación', () => {
@@ -27,7 +30,9 @@ describe('Tienda: detalle, carrito y confirmación', () => {
     catalog = jasmine.createSpyObj<CatalogService>('Catalog',['getProductBySlug','getProductById']);
     catalog.getProductBySlug.and.returnValue(of(product)); catalog.getProductById.and.returnValue(of(product));
     notifications = jasmine.createSpyObj<NotificationService>('Notifications',['showError','showSuccess']);
-    TestBed.configureTestingModule({ providers: [
+    // TestBed debe conocer las pantallas de las rutas para restaurar sus vistas
+    // compiladas y los proveedores de sus componentes después de cada caso.
+    TestBed.configureTestingModule({ imports: [ProductDetailPage, CartPage, CheckoutPage, ThankYouPage], providers: [
       provideHttpClient(), provideHttpClientTesting(), provideNoopAnimations(),
       provideRouter([
         { path: 'store/:slug', component: ProductDetailPage },
@@ -38,17 +43,24 @@ describe('Tienda: detalle, carrito y confirmación', () => {
       { provide: NotificationService, useValue: notifications },
       { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(undefined) }) } },
       { provide: AuthService, useValue: { verifySession: () => of({ phone: 'test-phone' }) } },
-      { provide: UserService, useValue: { getUserByPhone: () => of({
-        uid: 'test-user', displayName: 'Cliente Alfa', phoneNumber: 'test-phone', profile_status: 'complete',
-        addresses: [{ alias: 'Principal', street: 'Dirección ficticia', city: 'Ciudad Alfa', department: 'Departamento Alfa' }],
-      }) } },
+      { provide: UserService, useValue: { getMyProfile: () => of(userFixture()) } },
     ] });
     TestBed.overrideComponent(ProductDetailPage, { add: { providers: [
       { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(undefined) }) } },
     ] } });
+    // La consulta reactiva de ciudad se cubre en customer-forms.spec; aquí se
+    // conserva el HTTP real de la confirmación de envío y del POST del pedido.
+    TestBed.overrideComponent(ShippingFormComponent, { add: { providers: [
+      { provide: OrderService, useValue: { getShippingOptions: () => of(shippingOptions()) } },
+    ] } });
     http = TestBed.inject(HttpTestingController);
   });
   afterEach(() => http.verify());
+  async function confirmShipping() {
+    const request = http.expectOne(req => req.url.endsWith('/orders/shipping-options'));
+    expect(request.request.params.get('city')).toBe('Ciudad Alfa');
+    request.flush(shippingOptions()); await Promise.resolve();
+  }
 
   it('elige variante/precio/imágenes, agrega dos textos, edita carrito y confirma con ambos IDs', async () => {
     const harness = await RouterTestingHarness.create();
@@ -78,10 +90,12 @@ describe('Tienda: detalle, carrito y confirmación', () => {
 
     const checkout = await harness.navigateByUrl('/checkout',CheckoutPage);
     await checkout.reviewCart(); harness.detectChanges();
+    checkout.shipping = shippingOptions();
     expect(harness.routeNativeElement?.textContent).toContain('Nombre Tres');
     expect(harness.routeNativeElement?.querySelectorAll('textarea').length).toBe(0);
     const pending = checkout.placeOrder(cart.snapshot);
     await cart.refreshCatalog();
+    await confirmShipping();
     const request = http.expectOne(req => req.url.endsWith('/orders/order/send'));
     const payload = request.request.body;
     expect(payload.items).toEqual([
@@ -102,9 +116,11 @@ describe('Tienda: detalle, carrito y confirmación', () => {
     const harness = await RouterTestingHarness.create();
     const checkout = await harness.navigateByUrl('/checkout',CheckoutPage);
     await checkout.reviewCart();
+    checkout.shipping = shippingOptions();
     const navigation = spyOn(TestBed.inject(Router),'navigate').and.resolveTo(true);
     const pending = checkout.placeOrder(cart.snapshot);
     await cart.refreshCatalog();
+    await confirmShipping();
     http.expectOne(req => req.url.endsWith('/orders/order/send')).flush({ field: 'quantity', error: 'Disponibles: 1 unidades.' }, { status: 400, statusText: 'Bad Request' });
     await pending;
     expect(cart.snapshot.items[0].quantity).toBe(2);
@@ -117,6 +133,7 @@ describe('Tienda: detalle, carrito y confirmación', () => {
     const cart = TestBed.inject(CartService); cart.addToCart(product,product.variants[0],1,null,'');
     const harness = await RouterTestingHarness.create();
     const checkout = await harness.navigateByUrl('/checkout',CheckoutPage); await checkout.reviewCart();
+    checkout.shipping = shippingOptions();
     const fresh = structuredClone(product); fresh.variants[0].price = 300;
     catalog.getProductById.and.returnValue(of(fresh));
     await checkout.placeOrder(cart.snapshot);

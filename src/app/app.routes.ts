@@ -41,6 +41,18 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/cart/cart-page/cart-page').then((m) => m.CartPage),
       },
       {
+        path: 'profile', title: 'Mi perfil', canActivate: [authGuard],
+        loadComponent: () => import('./pages/profile/profile-page').then(m => m.ProfilePage),
+      },
+      {
+        path: 'profile/orders', title: 'Mis pedidos', canActivate: [authGuard],
+        loadComponent: () => import('./pages/profile/customer-orders-page').then(m => m.CustomerOrdersPage),
+      },
+      {
+        path: 'profile/orders/:id', title: 'Mi pedido', canActivate: [authGuard],
+        loadComponent: () => import('./pages/profile/customer-order-page').then(m => m.CustomerOrderPage),
+      },
+      {
         path: 'checkout',
         title: 'Finalizar Compra',
         loadComponent: () =>

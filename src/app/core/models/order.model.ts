@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import { CatalogPackagingOption } from './catalog.model';
-import { ShippingAddress } from './user.model';
+import { BillingInput, BillingSnapshot, ShippingAddress } from './user.model';
 
 /**
  * Estados por los que puede pasar un pedido.
@@ -58,6 +58,39 @@ export interface CreateOrderItem {
 export interface CreateOrderRequest {
   items: CreateOrderItem[];
   shippingAddress: ShippingAddress;
+  billing?: BillingInput;
+  saveShippingAddress?: boolean;
+  saveBillingProfile?: boolean;
+}
+
+export interface ShippingOptions {
+  city: string;
+  shippingMethod: 'local_gratis' | 'transportadora_contra_entrega';
+  shippingCost: number;
+  requiresRecipientDocument: boolean;
+  label: string;
+}
+export interface CustomerOrderSummary {
+  id: string;
+  orderNumber: string;
+  createdAt?: string;
+  updatedAt?: string;
+  total: number;
+  status: string;
+}
+export interface CustomerOrder extends CustomerOrderSummary {
+  items: OrderItem[];
+  shippingAddress: ShippingAddress;
+  billing: BillingSnapshot | null;
+  subtotal: number;
+  shippingCost: number;
+  shippingMethod?: string;
+  trackingNumber?: string;
+  pdfDelivered?: boolean;
+}
+export interface CustomerOrdersPage {
+  orders: CustomerOrderSummary[];
+  nextCursor: string | null;
 }
 
 /**
@@ -77,6 +110,8 @@ export interface Order {
 
   // Dirección de envío para este pedido
   shippingAddress: ShippingAddress;
+  billing?: BillingSnapshot | null;
+  shippingMethod?: string;
 
   // Estado y seguimiento
   status: OrderStatus;

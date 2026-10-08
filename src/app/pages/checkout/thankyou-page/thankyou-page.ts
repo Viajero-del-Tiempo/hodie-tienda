@@ -16,11 +16,15 @@ import { GuaraniPipe } from '@core/pipes/guarani.pipe';
 export class ThankYouPage implements OnInit {
   orderNumber: string | null = null;
   orderTotal: number | null = null;
+  orderId: string | null = null;
+  profileWarning = '';
   private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
     this.orderNumber = this.route.snapshot.queryParamMap.get('order');
     const total = globalThis.history.state?.orderTotal;
     this.orderTotal = Number.isSafeInteger(total) && total >= 0 ? total : null;
+    this.orderId = typeof globalThis.history.state?.orderId === 'string' ? globalThis.history.state.orderId : null;
+    this.profileWarning = globalThis.history.state?.profileWarning ?? '';
   }
 }

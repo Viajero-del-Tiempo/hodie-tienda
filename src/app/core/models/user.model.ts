@@ -12,12 +12,54 @@ export enum UserRole {
  * Representa una dirección de envío del usuario.
  */
 export interface ShippingAddress {
+  id?: string;
+  recipientName?: string; // Opcional únicamente para registros históricos.
+  recipientDocument?: string;
   alias: string; // ej. "Casa", "Oficina"
   street: string;
   city: string;
   department: string;
   postalCode?: string;
   instructions?: string; // Indicaciones adicionales para la entrega
+}
+
+export interface RucValidation {
+  status: 'valid' | 'mismatch_confirmed';
+  expectedDigit: number;
+}
+export interface BillingProfile {
+  id?: string;
+  alias?: string;
+  legalName: string;
+  ruc: string;
+  rucValidation?: RucValidation;
+  confirmedRuc?: string;
+  acknowledgeRucMismatch?: boolean;
+}
+export interface BillingSnapshot {
+  invoiceRequested: boolean;
+  legalName?: string;
+  ruc?: string;
+  rucValidation?: RucValidation;
+}
+export interface BillingInput extends BillingSnapshot {
+  confirmedRuc?: string;
+  acknowledgeRucMismatch?: boolean;
+}
+export interface RucAnalysis {
+  ruc: string;
+  suggestedRuc: string;
+  expectedDigit: number;
+  status: 'valid' | 'mismatch' | 'confirmation_required';
+  requiresConfirmation: boolean;
+}
+export interface ProfileUpdate {
+  version: string;
+  displayName: string;
+  addresses: ShippingAddress[];
+  billingProfiles: BillingProfile[];
+  defaultAddressId?: string | null;
+  defaultBillingProfileId?: string | null;
 }
 
 /**
@@ -45,6 +87,10 @@ export interface User {
   
   // Direcciones guardadas por el usuario
   addresses?: ShippingAddress[];
+  defaultAddressId?: string | null;
+  billingProfiles?: BillingProfile[];
+  defaultBillingProfileId?: string | null;
+  version?: string;
 
   //Dirección de facturación
   billingAddress?: BillingAddress;
@@ -56,4 +102,3 @@ export interface User {
   // Metadatos
   createdAt: any; // Fecha de registro (Timestamp o Date)
 }
-

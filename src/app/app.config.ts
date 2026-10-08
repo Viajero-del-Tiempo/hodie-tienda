@@ -13,9 +13,13 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { customMatPaginatorIntl } from './shared/config/LibraryConfig';
 
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideFirestore, getFirestore, connectFirestoreEmulator } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
+import { getEmulatorConfig } from './core/config/emulator.util';
 import { tokenInterceptor } from '@core/auth/token.interceptor';
+
+// Validar el modo local antes de inicializar proveedores o hacer solicitudes.
+const emulator = getEmulatorConfig(environment);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,6 +33,10 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(MatSnackBarModule),
     { provide: MatPaginatorIntl, useValue: customMatPaginatorIntl() },
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore()),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      if (emulator) connectFirestoreEmulator(firestore, emulator.host, emulator.port);
+      return firestore;
+    }),
   ],
 };

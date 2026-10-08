@@ -26,6 +26,7 @@ import { OrderService } from '@core/services/order.service';
 import { Order, OrderStatus } from '@core/models/order.model';
 import { NotificationService } from '@core/services/notification.service';
 import { StatusLabelPipe } from '../../../../../core/pipes/status-label.pipe';
+import { BillingSummaryComponent } from '../../../../../shared/components/billing-summary/billing-summary.component';
 
 @Component({
   selector: 'app-order-detail',
@@ -46,6 +47,7 @@ import { StatusLabelPipe } from '../../../../../core/pipes/status-label.pipe';
     MatTooltipModule,
     GuaraniPipe,
     StatusLabelPipe,
+    BillingSummaryComponent,
   ],
   templateUrl: './order-detail-component.html',
   styleUrls: ['./order-detail-component.scss'],

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, firstValueFrom } from 'rxjs';
-import { Order, CreateOrderRequest } from '../models/order.model';
+import { Order, CreateOrderRequest, CustomerOrder, CustomerOrdersPage, ShippingOptions } from '../models/order.model';
 import { environment } from '../../../environments/environment';
 
 export interface AdminOrdersResponse {
@@ -23,6 +23,8 @@ export interface CreateOrderResponse {
   total: number;
   pdfDelivered: boolean;
   shippingMethod: string;
+  profileSaved?: boolean | null;
+  profileWarning?: string;
 }
 
 @Injectable({
@@ -31,6 +33,25 @@ export interface CreateOrderResponse {
 export class OrderService {
   private http = inject(HttpClient);
   private apiUrl = environment.whatsappApiUrl;
+
+  getShippingOptions(city: string): Observable<ShippingOptions> {
+    return this.http.get<ShippingOptions>(`${this.apiUrl}/orders/shipping-options`, { params: { city } });
+  }
+
+  // Estas lecturas usan exclusivamente el dueño autenticado; no reciben UID/teléfono.
+  getMyOrders(cursor?: string): Observable<CustomerOrdersPage> {
+    return this.http.get<CustomerOrdersPage>(`${this.apiUrl}/users/me/orders`, {
+      params: cursor ? { limit: 20, cursor } : { limit: 20 },
+    });
+  }
+
+  getMyOrder(id: string): Observable<CustomerOrder> {
+    return this.http.get<{ order: CustomerOrder }>(`${this.apiUrl}/users/me/orders/${encodeURIComponent(id)}`).pipe(map(res => res.order));
+  }
+
+  getMyOrderPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/users/me/orders/${encodeURIComponent(id)}/pdf`, { responseType: 'blob' });
+  }
 
   private parseTimestamp(ts: any): any {
     if (!ts) return null;

@@ -1,271 +1,68 @@
 <div class="checkout-container">
-  @if (isLoading) {
-  <div class="loading-shade">
-    <mat-spinner></mat-spinner>
-  </div>
-  } @else { @if (user && (cart$ | async); as cart) {
-  <!-- Título de la página -->
-  <header class="checkout-header">
-    <h1>Finalizar Compra</h1>
-    <p>Revisa tu pedido y completa los datos para finalizar la compra.</p>
-  </header>
-
-  @if (catalogNotice) { <p role="status">{{ catalogNotice }}</p> }
-  @for (error of catalogErrors; track $index) { <p role="alert">{{ error }}</p> }
-  @if (catalogErrors.length) {
-    <a matButton routerLink="/cart">Corregir carrito</a>
-    <button matButton (click)="reviewCart()" [disabled]="isReviewing">Revisar nuevamente</button>
-  }
-  <div class="checkout-layout">
-    <!-- Columna izquierda: Formulario o Detalles del pedido -->
-    <div class="checkout-main">
-      <!--
-            * SECCIÓN PARA COMPLETAR PERFIL
-            * Se muestra si el perfil del usuario está incompleto.
-          -->
-      @if (user.profile_status === 'incomplete' || isEditingProfile) {
-      <mat-card class="form-card" appearance="outlined">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>person</mat-icon>
-            Completa tu Perfil
-          </mat-card-title>
-          <mat-card-subtitle>Necesitamos tus datos de envío para continuar.</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="addressForm" (ngSubmit)="saveProfile()">
-            <p class="form-description">
-              Esta información se guardará en tu perfil para futuras compras.
-            </p>
-            <div class="form-grid">
-              <mat-form-field appearance="outline" class="full-width" style="grid-column: 1 / -1">
-                <mat-label>Nombre y Apellido</mat-label>
-                <input matInput formControlName="displayName" placeholder="Ej: Juan Pérez" />
-                @if (addressForm.get('displayName')?.hasError('required')) {
-                <mat-error> El nombre es obligatorio. </mat-error>
-                }
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Dirección (Calle y número)</mat-label>
-                <input matInput formControlName="street" placeholder="Ej: Av. Principal 123" />
-                @if (addressForm.get('street')?.hasError('required')) {
-                <mat-error> La dirección es obligatoria. </mat-error>
-                }
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Ciudad</mat-label>
-                <input matInput formControlName="city" placeholder="Ej: Asunción" />
-                @if (addressForm.get('city')?.hasError('required')) {
-                <mat-error> La ciudad es obligatoria. </mat-error>
-                }
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Departamento</mat-label>
-                <input matInput formControlName="department" placeholder="Ej: Central" />
-                @if (addressForm.get('department')?.hasError('required')) {
-                <mat-error> El departamento es obligatorio. </mat-error>
-                }
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Instrucciones de entrega (Opcional)</mat-label>
-              <textarea
-                matInput
-                formControlName="instructions"
-                placeholder="Ej: Dejar en portería, llamar al llegar."
-                rows="3"
-              ></textarea>
-            </mat-form-field>
-
-            <div class="billing-section">
-              <mat-checkbox
-                [checked]="sameAsShipping"
-                (change)="toggleBillingAddress($event.checked)"
-                color="primary"
-              >
-                La dirección de facturación es la misma que la de envío
-              </mat-checkbox>
-            </div>
-
-            @if (!sameAsShipping) {
-            <div class="billing-form" [formGroup]="billingAddressForm">
-              <h4>Dirección de Facturación</h4>
-              <div class="form-grid">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Dirección (Calle y número)</mat-label>
-                  <input matInput formControlName="street" placeholder="Ej: Av. Principal 123" />
-                  @if (billingAddressForm.get('street')?.hasError('required')) {
-                  <mat-error> La dirección es obligatoria. </mat-error>
-                  }
+  <header><h1>Finalizar compra</h1><p>Revisá tu pedido y completá los datos de entrega.</p></header>
+  @if (isLoading) { <mat-spinner [diameter]="40" aria-label="Cargando perfil"></mat-spinner> }
+  @if (error) { <p role="alert" class="error">{{ error }}</p> }
+  @if (!isLoading && !user) { <button matButton (click)="loadInitialData()">Reintentar</button><a matButton routerLink="/login">Iniciar sesión</a> }
+  @if (completedOrder) {
+    <p role="status">El pedido {{ completedOrder.orderNumber }} está guardado.</p>
+    @if (completedOrder.profileWarning) { <p role="alert">{{ completedOrder.profileWarning }}</p> }
+    <a matButton [routerLink]="['/profile/orders', completedOrder.orderId]">Ver mi pedido</a>
+  } @else if (user && !isLoading) {
+    @if (cart$ | async; as cart) {
+      @if (!cart.items.length) { <p>Tu carrito está vacío.</p><a matButton routerLink="/store">Ir al catálogo</a> }
+      @else {
+        <div class="checkout-layout">
+          <fieldset [disabled]="isSaving">
+            <mat-card appearance="outlined"><mat-card-content>
+              <h2>Dirección de envío</h2>
+              @if (user.addresses?.length) {
+                <mat-form-field appearance="outline"><mat-label>Elegir dirección</mat-label>
+                  <mat-select [value]="selectedAddress" (selectionChange)="chooseAddress($event.value)" [disabled]="isSaving">
+                    @for (address of user.addresses; track address.id) { <mat-option [value]="address.id">{{ address.alias || address.street }} — {{ address.city }}</mat-option> }
+                    <mat-option value="new">Cargar una nueva dirección</mat-option>
+                  </mat-select>
                 </mat-form-field>
-
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Ciudad</mat-label>
-                  <input matInput formControlName="city" placeholder="Ej: Asunción" />
-                  @if (billingAddressForm.get('city')?.hasError('required')) {
-                  <mat-error> La ciudad es obligatoria. </mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Departamento</mat-label>
-                  <input matInput formControlName="department" placeholder="Ej: Central" />
-                  @if (billingAddressForm.get('department')?.hasError('required')) {
-                  <mat-error> El departamento es obligatorio. </mat-error>
-                  }
-                </mat-form-field>
-              </div>
-            </div>
-            }
-
-            <div class="form-actions">
-              @if (isEditingProfile) {
-              <button
-                mat-button
-                type="button"
-                (click)="cancelEdit()"
-                [disabled]="isSaving"
-                style="margin-right: 8px"
-              >
-                Cancelar
-              </button>
               }
-              <button
-                mat-raised-button
-                color="primary"
-                type="submit"
-                [disabled]="addressForm.invalid || isSaving"
-                class="full-width"
-              >
-                @if (!isSaving) {
-                <span>Guardar y Continuar</span>
-                } @else {
-                <span>Guardando...</span>
+              @for (form of [addressForm]; track form.editorId) { <app-shipping-form [form]="form" (shippingChange)="shipping = $event" /> }
+              <mat-checkbox [(ngModel)]="saveShippingAddress" [disabled]="isSaving">Guardar esta dirección para la próxima compra</mat-checkbox>
+            </mat-card-content></mat-card>
+            <mat-card appearance="outlined"><mat-card-content>
+              <h2>Facturación</h2>
+              <mat-checkbox [(ngModel)]="invoiceRequested" [disabled]="isSaving">Necesito factura con RUC</mat-checkbox>
+              @if (invoiceRequested) {
+                @if (user.billingProfiles?.length) {
+                  <mat-form-field appearance="outline"><mat-label>Datos de facturación</mat-label><mat-select [value]="selectedBilling" (selectionChange)="chooseBilling($event.value)" [disabled]="isSaving">
+                    @for (profile of user.billingProfiles; track profile.id) { <mat-option [value]="profile.id">{{ profile.alias || profile.legalName }} — {{ profile.ruc }}</mat-option> }
+                    <mat-option value="new">Cargar otros datos</mat-option>
+                  </mat-select></mat-form-field>
                 }
-              </button>
-            </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
-      } @else {
-      <!-- Detalles de Envío -->
-      <mat-card class="info-card" appearance="outlined">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>local_shipping</mat-icon>
-            Dirección de Envío
-          </mat-card-title>
-        </mat-card-header>
-        @if (user.addresses && user.addresses[0]; as address) {
-        <mat-card-content>
-          <div class="address-details">
-            <p class="address-text">
-              <strong>{{ address.street }}, {{ address.city }}</strong
-              ><br />
-              {{ address.department }}
-            </p>
-            @if (address.instructions) {
-            <p class="address-instructions">
-              <em>Instrucciones: {{ address.instructions }}</em>
-            </p>
-            }
-          </div>
-        </mat-card-content>
-        <mat-card-actions align="end">
-          <button matButton="outlined" (click)="editProfile()">Cambiar dirección</button>
-        </mat-card-actions>
-        }
-      </mat-card>
-
-      <!-- Método de Pago -->
-      <mat-card class="info-card" appearance="outlined">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>payment</mat-icon>
-            Método de Pago
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="payment-method">
-            <h4>Transferencia Bancaria</h4>
-            <p class="payment-instructions">
-              Una vez finalizada la compra, recibirás los datos de la cuenta bancaria por WhatsApp
-              para realizar la transferencia.
-            </p>
-          </div>
-        </mat-card-content>
-      </mat-card>
+                @for (form of [billingForm]; track form.editorId) { <app-billing-form [form]="form" (validationReady)="rucReady = $event" /> }
+                <mat-checkbox [(ngModel)]="saveBillingProfile" [disabled]="isSaving">Guardar estos datos de facturación</mat-checkbox>
+              } @else { <p>El pedido se registra como consumidor final.</p> }
+            </mat-card-content></mat-card>
+            <a matButton routerLink="/profile">Administrar mis datos y direcciones</a>
+          </fieldset>
+          <aside>
+            <mat-card appearance="outlined"><mat-card-content>
+              <h2>Resumen del pedido</h2>
+              @if (catalogNotice) { <p role="status">{{ catalogNotice }}</p> }
+              @for (error of catalogErrors; track $index) { <p role="alert" class="error">{{ error }}</p> }
+              @if (catalogErrors.length) { <a matButton routerLink="/cart">Corregir carrito</a><button matButton (click)="reviewCart()" [disabled]="isReviewing || isSaving">Revisar nuevamente</button> }
+              @for (item of cart.items; track item.itemId) {
+                <article class="line"><h3>{{ item.product.name }}</h3><p>{{ label(item.product, item.variant) }}</p>
+                  <p>{{ item.quantity }} × {{ item.unitPrice | guarani }}</p>
+                  @if (item.selectedPackaging) { <p>Empaque: {{ item.selectedPackaging.name }} (+{{ item.selectedPackaging.price | guarani }})</p> }
+                  @if (item.customization) { <p>Texto: {{ item.customization }}</p> } @else if (item.customizationPending) { <p>Texto pendiente de personalización.</p> }
+                  @if (item.product.customization.allowed && item.product.customization.allowsImage) { <p>Podés enviar tu imagen por WhatsApp después de la compra.</p> }
+                </article>
+              }
+              <p>Envío: {{ shipping?.label || 'Elegí una ciudad' }}</p>
+              <p><strong>Total informativo: {{ cart.subtotal | guarani }}</strong></p>
+              <button matButton="filled" (click)="placeOrder(cart)" [disabled]="isSaving || isReviewing || catalogErrors.length > 0 || !shipping || addressForm.invalid || (invoiceRequested && (!rucReady || billingForm.invalid))">{{ isSaving ? 'Guardando pedido…' : 'Confirmar pedido' }}</button>
+            </mat-card-content></mat-card>
+          </aside>
+        </div>
       }
-    </div>
-
-    <!-- Columna derecha: Resumen del Carrito -->
-    <aside class="checkout-sidebar">
-      <mat-card class="summary-card" appearance="outlined">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>shopping_cart</mat-icon>
-            Resumen del Pedido
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <mat-list>
-            @for (item of cart.items; track item.itemId) {
-            <mat-list-item class="checkout-cart-item">
-              <span matListItemTitle>{{ item.product.name }} ({{ item.quantity }}x)</span>
-              <span matListItemLine>{{ label(item.product,item.variant) }}</span>
-              <span matListItemLine class="item-details">
-                @if (item.selectedPackaging) {
-                <small>Empaque: {{ item.selectedPackaging.name }}</small>
-                }
-              </span>
-              <span matListItemMeta class="item-price">{{
-                item.unitPrice * item.quantity | guarani
-              }}</span>
-            </mat-list-item>
-            @if (item.customization) {
-              <p class="customization-text">Texto: {{ item.customization }}</p>
-            } @else if (item.customizationPending) { <p>Texto pendiente de personalización.</p> }
-            @if (item.product.customization.allowed && item.product.customization.allowsImage) {
-              <p>Podés enviar tu imagen por WhatsApp después de la compra.</p>
-            }
-            <mat-divider></mat-divider>
-            } @empty {
-            <p class="empty-cart-message">Tu carrito está vacío.</p>
-            }
-          </mat-list>
-
-          <mat-divider></mat-divider>
-
-          <div class="summary-totals">
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <strong>{{ cart.subtotal | guarani }}</strong>
-            </div>
-            <div class="summary-row">
-              <span>Envío</span>
-              <span>Gratis en Minga Guazú; resto del país, flete contra entrega.</span>
-            </div>
-            <div class="summary-row grand-total">
-              <span>Total informativo</span>
-              <strong>{{ cart.subtotal | guarani }}</strong>
-            </div>
-          </div>
-        </mat-card-content>
-
-        @if (user.profile_status === 'complete' && cart.items.length > 0) {
-        <mat-card-actions>
-          <button matButton="filled" matIconSuffix class="full-width" (click)="placeOrder(cart)" [disabled]="isReviewing || isLoading || catalogErrors.length > 0">
-            <mat-icon>check_circle</mat-icon>
-            Confirmar Pedido
-          </button>
-        </mat-card-actions>
-        }
-      </mat-card>
-    </aside>
-  </div>
-  } }
+    }
+  }
 </div>

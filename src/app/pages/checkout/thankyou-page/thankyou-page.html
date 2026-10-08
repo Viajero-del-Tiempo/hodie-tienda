@@ -24,6 +24,8 @@
     </div>
 
     <div class="actions">
+      @if (profileWarning) { <p role="alert">{{ profileWarning }}</p><a matButton routerLink="/profile">Guardar datos en Mi perfil</a> }
+      @if (orderId) { <a matButton [routerLink]="['/profile/orders', orderId]">Ver mi pedido</a> }
       <button class="btn-primary" mat-button routerLink="/store">Seguir Comprando</button>
     </div>
   </div>
