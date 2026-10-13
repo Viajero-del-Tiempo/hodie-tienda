@@ -28,6 +28,8 @@ import { NotificationService } from '@core/services/notification.service';
 import { StatusLabelPipe } from '../../../../../core/pipes/status-label.pipe';
 import { BillingSummaryComponent } from '../../../../../shared/components/billing-summary/billing-summary.component';
 
+import { OrderReceiptsComponent } from "../receipts/order-receipts.component";
+
 @Component({
   selector: 'app-order-detail',
   standalone: true,
@@ -48,6 +50,7 @@ import { BillingSummaryComponent } from '../../../../../shared/components/billin
     GuaraniPipe,
     StatusLabelPipe,
     BillingSummaryComponent,
+    OrderReceiptsComponent,
   ],
   templateUrl: './order-detail-component.html',
   styleUrls: ['./order-detail-component.scss'],

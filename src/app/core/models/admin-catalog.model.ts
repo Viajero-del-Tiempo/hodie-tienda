@@ -20,6 +20,7 @@ export interface ProductInput {
   packagingOptions: CatalogPackagingOption[];
 }
 export interface CatalogPolicy { id: string; title: string; text: string; }
+export interface AgentConfig { corporateQuantityThreshold: number; version: string; }
 export interface CatalogChange {
   field: string;
   variantId?: string;

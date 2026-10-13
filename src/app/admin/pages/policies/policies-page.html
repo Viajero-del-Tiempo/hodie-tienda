@@ -1,4 +1,5 @@
 <header><h1>Políticas</h1><button type="button" (click)="edit()" [disabled]="saving">Nueva política</button></header>
+<app-agent-config-form />
 @if (loading) { <p role="status">Cargando políticas…</p> }
 <div class="table-scroll"><table><thead><tr><th>Tema</th><th>Título</th><th>Acción</th></tr></thead><tbody>
   @for (policy of policies; track policy.id) { <tr><td>{{ policy.id }}</td><td>{{ policy.title }}</td><td><button type="button" (click)="edit(policy)" [disabled]="saving">Editar</button></td></tr> }

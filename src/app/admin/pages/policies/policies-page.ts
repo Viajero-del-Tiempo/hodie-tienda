@@ -5,12 +5,13 @@ import { firstValueFrom } from 'rxjs';
 import { AdminCatalogService } from '@core/services/admin-catalog.service';
 import { CatalogFailure, CatalogPolicy } from '@core/models/admin-catalog.model';
 import { EditorErrors, errorMessage, failureMessage, slugPattern, textControl } from '../../catalog-editor.util';
+import { AgentConfigFormComponent } from './agent-config-form.component';
 
 function policyForm(value?: CatalogPolicy): FormGroup {
   const id = textControl(value?.id, true); id.addValidators(Validators.pattern(slugPattern));
   return new FormGroup({ id, title: textControl(value?.title, true), text: textControl(value?.text, true) });
 }
-@Component({ selector: 'app-policies-page', standalone: true, imports: [ReactiveFormsModule],
+@Component({ selector: 'app-policies-page', standalone: true, imports: [ReactiveFormsModule, AgentConfigFormComponent],
   templateUrl: './policies-page.html', styleUrl: '../../_catalog-panel.scss' })
 export class PoliciesPage implements OnInit {
   private api = inject(AdminCatalogService); private cdr = inject(ChangeDetectorRef); private destroyRef = inject(DestroyRef);

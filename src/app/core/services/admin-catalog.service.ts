@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { from, map, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AdminProduct, CatalogPolicy, ProductInput } from '../models/admin-catalog.model';
+import { AdminProduct, CatalogPolicy, ProductInput, AgentConfig } from '../models/admin-catalog.model';
 import { Category } from '../models/catalog.model';
 
 function readImage(file: File): Promise<string> {
@@ -53,6 +53,12 @@ export class AdminCatalogService {
   }
   getPolicies(): Observable<CatalogPolicy[]> {
     return this.http.get<{ policies: CatalogPolicy[] }>(`${this.url}/policies`).pipe(map(res => res.policies));
+  }
+  getAgentConfig(): Observable<AgentConfig | null> {
+    return this.http.get<{ config: AgentConfig | null }>(`${this.url}/agent-config`).pipe(map(res => res.config));
+  }
+  saveAgentConfig(corporateQuantityThreshold: number, version: string | null): Observable<AgentConfig> {
+    return this.http.put<{ config: AgentConfig }>(`${this.url}/agent-config`, { corporateQuantityThreshold, version }).pipe(map(res => res.config));
   }
   savePolicy(input: CatalogPolicy, existingId?: string): Observable<CatalogPolicy> {
     const request = existingId
