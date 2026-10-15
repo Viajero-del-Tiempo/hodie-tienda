@@ -5,10 +5,10 @@
     <a matButton routerLink="/store">Volver al catálogo</a>
     <div class="detail-grid">
       <section class="image-gallery">
-        @if (selectedImageUrl) { <img class="variant-main-image" [src]="selectedImageUrl" [alt]="product.name" /> }
+        @if (selectedImageUrl) { <img class="variant-main-image" [src]="selectedImageUrl" [alt]="selectedImageAlt" /> }
         <div class="thumbnail-grid">
           @for (image of selectedVariant?.imageUrls ?? []; track $index) {
-            <button type="button" (click)="selectedImageUrl = image" [attr.aria-label]="'Ver imagen ' + ($index + 1)">
+            <button type="button" (click)="chooseProductImage(image)" [attr.aria-label]="'Ver imagen ' + ($index + 1)">
               <img [src]="image" [alt]="product.name" class="thumbnail" />
             </button>
           }

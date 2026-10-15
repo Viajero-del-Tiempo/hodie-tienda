@@ -81,6 +81,7 @@
           <label>Identificador <input formControlName="type" required /></label><small role="alert">{{ message(row.get('type')) }}</small>
           <label>Nombre público <input formControlName="name" required /></label><small role="alert">{{ message(row.get('name')) }}</small>
           <label>Precio (Gs.) <input type="number" formControlName="price" min="0" step="1" required /></label><small role="alert">{{ message(row.get('price')) }}</small>
+          <p>Foto de este producto con este empaque. Se usa en la tienda y al ofrecerlo por WhatsApp.</p>
           <app-catalog-images [control]="row.get('imageUrl')!" (pendingChange)="pending(row.get('imageUrl')!, $event)" />
           <button type="button" (click)="packages.removeAt(i)">Quitar empaque</button><small role="alert">{{ message(row) }}</small>
         </fieldset>

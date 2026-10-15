@@ -21,7 +21,7 @@ export interface CatalogPackagingOption {
   type: string;
   name: string;
   price: number;
-  imageUrl?: string;
+  imageUrl?: string; // Este producto con este empaque; ausente/vacía si no tiene foto.
 }
 
 export interface CustomizationConfig {

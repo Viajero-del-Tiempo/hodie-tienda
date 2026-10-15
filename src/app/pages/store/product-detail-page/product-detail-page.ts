@@ -29,8 +29,17 @@ import { AddToCartDialogComponent } from '../../../shared/components/add-to-cart
 export class ProductDetailPage implements OnInit {
   product: CatalogProduct | null = null;
   selectedVariant: ProductVariant | null = null;
-  selectedPackaging: CatalogPackagingOption | null = null;
+  private packaging: CatalogPackagingOption | null = null;
+  private productImageUrl = '';
   selectedImageUrl = '';
+  get selectedPackaging(): CatalogPackagingOption | null { return this.packaging; }
+  set selectedPackaging(value: CatalogPackagingOption | null) {
+    this.packaging = value; this.showSelectionImage();
+  }
+  get selectedImageAlt(): string {
+    return this.packaging?.imageUrl && this.selectedImageUrl === this.packaging.imageUrl
+      ? (this.product?.name ?? '') + ' con ' + this.packaging.name : this.product?.name ?? '';
+  }
   quantity = 1;
   maxAvailableQuantity = 0;
   customization = '';
@@ -63,7 +72,8 @@ export class ProductDetailPage implements OnInit {
       }));
     }), takeUntilDestroyed(this.destroyRef)).subscribe(product => {
       this.product = product;
-      this.selectedImageUrl = product?.variants.find(v => v.imageUrls.length)?.imageUrls[0] || '';
+      this.productImageUrl = product?.variants.find(v => v.imageUrls.length)?.imageUrls[0] || '';
+      this.showSelectionImage();
       const available = product?.variants.filter(v => v.stock > 0) ?? [];
       if (available.length === 1) this.onVariantChange(available[0]);
       this.isLoading = false; this.cdr.markForCheck();
@@ -72,9 +82,12 @@ export class ProductDetailPage implements OnInit {
   onVariantChange(variant: ProductVariant | null): void {
     if (variant?.id !== this.selectedVariant?.id) this.quantity = 1;
     this.selectedVariant = variant;
-    this.selectedImageUrl = variant?.imageUrls[0] || this.product?.variants.find(v => v.imageUrls.length)?.imageUrls[0] || '';
+    this.productImageUrl = variant?.imageUrls[0] || this.product?.variants.find(v => v.imageUrls.length)?.imageUrls[0] || '';
+    this.showSelectionImage();
     this.updateLimit();
   }
+  chooseProductImage(image: string): void { this.productImageUrl = image; this.selectedImageUrl = image; }
+  private showSelectionImage(): void { this.selectedImageUrl = this.packaging?.imageUrl || this.productImageUrl; }
   private updateLimit(): void {
     this.maxAvailableQuantity = this.product && this.selectedVariant
       ? Math.min(100, this.cart.remainingQuantity(this.product.id, this.selectedVariant.id, this.selectedVariant.stock)) : 0;

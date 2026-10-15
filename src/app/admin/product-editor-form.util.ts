@@ -1,7 +1,7 @@
 import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ProductInput } from '@core/models/admin-catalog.model';
 import { CatalogPackagingOption } from '@core/models/catalog.model';
-import { integerControl, slugPattern, textControl, textLength } from './catalog-editor.util';
+import { catalogImageUrl, integerControl, slugPattern, textControl, textLength } from './catalog-editor.util';
 
 export const groupArray = (form: FormGroup, name: string) => form.get(name) as FormArray<FormGroup>;
 export const stringArray = (form: FormGroup, name: string) => form.get(name) as FormArray<FormControl<string>>;
@@ -14,8 +14,9 @@ export function variantForm(axes: string[], value?: ProductInput['variants'][num
     imageUrls: new FormArray((value?.imageUrls ?? []).map(url => textControl(url, true))) });
 }
 export function packagingForm(value?: CatalogPackagingOption): FormGroup {
+  const imageUrl = textControl(value?.imageUrl); imageUrl.addValidators(catalogImageUrl); imageUrl.updateValueAndValidity({ emitEvent: false });
   return new FormGroup({ type: textControl(value?.type, true), name: textControl(value?.name, true),
-    price: integerControl(value?.price ?? null), imageUrl: textControl(value?.imageUrl) });
+    price: integerControl(value?.price ?? null), imageUrl });
 }
 export function productForm(value?: ProductInput): FormGroup {
   const slug = textControl(value?.slug, true); slug.addValidators(Validators.pattern(slugPattern));

@@ -5,6 +5,15 @@ import { clearServerError, serverValueSnapshot, setServerControlError } from '@c
 export const slugSuggestion = (value: string): string => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 export const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export const catalogImageUrl: ValidatorFn = control => {
+  if (typeof control.value !== 'string') return { imageUrl: true };
+  const value = control.value.trim();
+  if (!value) return null;
+  if (/[\s\\\u0000-\u001f\u007f]/u.test(value)) return { imageUrl: true };
+  if (value.startsWith('/') && !value.startsWith('//')) return null;
+  try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) && !!url.hostname && !url.username && !url.password ? null : { imageUrl: true }; }
+  catch { return { imageUrl: true }; }
+};
 // El modelo cuenta caracteres Unicode después de trim/NFC, no unidades UTF-16.
 export const textLength = (min = 0, max = Infinity): ValidatorFn => control => {
   const length = [...String(control.value ?? '').trim().normalize('NFC')].length;
@@ -33,6 +42,7 @@ export function errorMessage(control: AbstractControl | null): string {
   if (errors?.['min']) return `El mínimo es ${errors['min'].min}.`;
   if (errors?.['max']) return `El máximo es ${errors['max'].max}.`;
   if (errors?.['integer']) return 'Ingresá un número entero.';
+  if (errors?.['imageUrl']) return 'Ingresá una URL HTTP/HTTPS de imagen o una ruta desde / del mismo origen.';
   if (errors?.['duplicate']) return 'No se admiten valores repetidos.';
   return '';
 }
