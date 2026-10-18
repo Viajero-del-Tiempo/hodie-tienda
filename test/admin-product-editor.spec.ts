@@ -126,6 +126,45 @@ describe('Editor administrativo de productos', () => {
     expect(api.updateProduct).not.toHaveBeenCalled(); expect(page.variants.at(0).get('price')!.hasError('integer')).toBeTrue();
     page.variants.at(0).get('price')!.setValue(-1); void page.onSubmit(); flushMicrotasks(); expect(api.updateProduct).not.toHaveBeenCalled();
   }));
+  it('sube la foto del empaque por el servicio firmado, bloquea guardado mientras sube y envía la URL del servidor', fakeAsync(() => {
+    const fixture = start(); const page = fixture.componentInstance;
+    const cell = fixture.nativeElement.querySelector('[data-packaging-index="0"]');
+    const fileInput = cell.querySelector('input[type="file"]') as HTMLInputElement;
+    api.uploadImage.and.returnValue(of('https://example.test/producto-con-empaque.png'));
+    Object.defineProperty(fileInput, 'files', { value: [new File(['imagen de prueba'], 'test.png', { type: 'image/png' })], configurable: true });
+    fileInput.dispatchEvent(new Event('change'));
+    expect(page.imagesPending).toBeTrue(); void page.onSubmit(); expect(api.updateProduct).not.toHaveBeenCalled();
+    flushMicrotasks(); fixture.detectChanges();
+    expect(api.uploadImage).toHaveBeenCalledTimes(1); expect(page.imagesPending).toBeFalse();
+    expect(page.packages.at(0).get('imageUrl')!.value).toBe('https://example.test/producto-con-empaque.png');
+    expect(cell.querySelector('img').getAttribute('src')).toBe('https://example.test/producto-con-empaque.png');
+    void page.onSubmit(); flushMicrotasks();
+    expect(api.updateProduct.calls.mostRecent().args[1].packagingOptions[0].imageUrl).toBe('https://example.test/producto-con-empaque.png');
+  }));
+  it('rechaza URL de empaque inválida y muestra error del servidor en imageUrl sin perder el borrador', fakeAsync(() => {
+    const fixture = start(); const page = fixture.componentInstance; const image = page.packages.at(1).get('imageUrl')!;
+    image.setValue('javascript:alert(1)'); void page.onSubmit(); flushMicrotasks(); fixture.detectChanges();
+    expect(api.updateProduct).not.toHaveBeenCalled(); expect(image.hasError('imageUrl')).toBeTrue();
+    expect(fixture.nativeElement.querySelector('[data-packaging-index="1"]').textContent).toContain('URL HTTP/HTTPS');
+    image.setValue('https://example.test/nueva.png'); page.packages.at(1).get('name')!.setValue('Empaque editado');
+    const before = structuredClone(page.productForm.getRawValue());
+    api.updateProduct.and.returnValue(throwError(() => ({ status: 400, error: { field: 'packagingOptions[1].imageUrl', error: 'Imagen rechazada.' } })));
+    void page.onSubmit(); flushMicrotasks(); fixture.detectChanges();
+    expect(image.errors?.['server']).toBe('Imagen rechazada.'); expect(page.productForm.getRawValue()).toEqual(before);
+    expect(fixture.nativeElement.querySelector('[data-packaging-index="1"]').textContent).toContain('Imagen rechazada.');
+    image.setValue('https://example.test/corregida.png'); expect(image.errors?.['server']).toBeUndefined(); expect(image.valid).toBeTrue();
+  }));
+  it('conflicto 409 conserva la foto editada y permite quitarla del borrador', fakeAsync(() => {
+    const fixture = start(); const page = fixture.componentInstance; const image = page.packages.at(0).get('imageUrl')!;
+    image.setValue('https://example.test/edited.png');
+    api.updateProduct.and.returnValue(throwError(() => ({ status: 409, error: { field: 'version', code: 'CATALOG_VERSION_CONFLICT', error: 'Cambió el stock.' } })));
+    void page.onSubmit(); flushMicrotasks(); fixture.detectChanges();
+    expect(image.value).toBe('https://example.test/edited.png'); expect(page.conflict).toBeTrue();
+    const cell = fixture.nativeElement.querySelector('[data-packaging-index="0"]');
+    const remove = (Array.from(cell.querySelectorAll('button')) as HTMLButtonElement[]).find(button => button.textContent!.includes('Quitar imagen'))!;
+    remove.click(); fixture.detectChanges(); expect(image.value).toBe(''); expect(image.dirty).toBeTrue();
+    expect(page.packages.at(0).get('name')!.value).toBe('Empaque Alfa');
+  }));
   it('valida longitudes Unicode como el modelo y normaliza ejes con tildes compuestas', fakeAsync(() => {
     const fixture = start(); const page = fixture.componentInstance; const name = page.productForm.get('name')!;
     name.setValue('😀'.repeat(80)); expect(name.valid).toBeTrue(); name.setValue('😀'.repeat(81)); expect(name.hasError('maxlength')).toBeTrue();

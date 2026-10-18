@@ -45,6 +45,14 @@ describe('API del catálogo admin', () => {
     service.savePolicy(policy).subscribe(); const createPolicy = http.expectOne(url + '/policies'); expect(createPolicy.request.body.id).toBe(policy.id); createPolicy.flush({ policy });
     service.savePolicy(policy, policy.id).subscribe(); const updatePolicy = http.expectOne(url + '/policies/' + policy.id); expect(updatePolicy.request.method).toBe('PUT'); updatePolicy.flush({ policy });
   });
+  it('configuración del agente usa un endpoint propio y manda solamente umbral y versión', () => {
+    const config = { corporateQuantityThreshold: 12, version: '3' };
+    service.getAgentConfig().subscribe(value => expect(value).toEqual(config));
+    http.expectOne(url + '/agent-config').flush({ config });
+    service.saveAgentConfig(15, '3').subscribe(); const request = http.expectOne(url + '/agent-config');
+    expect(request.request.method).toBe('PUT'); expect(request.request.body).toEqual({ corporateQuantityThreshold: 15, version: '3' });
+    request.flush({ config: { corporateQuantityThreshold: 15, version: '4' } });
+  });
   it('sube base64 y MIME únicamente a /admin/images, sin presets ni secretos', fakeAsync(() => {
     spyOn(FileReader.prototype, 'readAsDataURL').and.callFake(function(this: FileReader) {
       Object.defineProperty(this, 'result', { value: 'data:image/png;base64,aW1hZ2Vu' });

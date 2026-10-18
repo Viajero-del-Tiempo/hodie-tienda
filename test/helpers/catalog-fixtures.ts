@@ -12,7 +12,7 @@ export function productFixture(): CatalogProduct {
       { id: 'test-v3', sku: 'TEST-C', options: { 'eje-a': 'Valor Dos', 'eje-b': 'Formato Dos' }, price: 180, stock: 5, active: true, available: true, imageUrls: ['data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%223%22 height=%221%22/%3E'] },
     ],
     packagingOptions: [
-      { type: 'tipo/libre', name: 'Empaque Alfa', price: 25, imageUrl: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%221%22/%3E' },
+      { type: 'tipo/libre', name: 'Empaque Alfa', price: 25, imageUrl: '/local-images/packaging-example.png' },
       { type: 'gratuito', name: 'Empaque Beta', price: 0 },
     ],
     customization: { allowed: true, allowsText: true, maxChars: 20, allowsImage: false, notes: 'Nota ficticia' },

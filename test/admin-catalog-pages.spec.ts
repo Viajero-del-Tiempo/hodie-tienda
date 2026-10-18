@@ -10,7 +10,8 @@ import { adminProductFixture, categoryFixture, policyFixture } from './helpers/a
 describe('Listados y editores del catálogo admin', () => {
   let api: jasmine.SpyObj<AdminCatalogService>;
   beforeEach(() => {
-    api = jasmine.createSpyObj('AdminCatalog', ['getProducts', 'getProduct', 'setProductActive', 'getCategories', 'saveCategory', 'getPolicies', 'savePolicy']);
+    api = jasmine.createSpyObj('AdminCatalog', ['getProducts', 'getProduct', 'setProductActive', 'getCategories', 'saveCategory', 'getPolicies', 'savePolicy', 'getAgentConfig', 'saveAgentConfig']);
+    api.getAgentConfig.and.returnValue(of(null));
     api.getProducts.and.returnValue(of([adminProductFixture()])); api.getProduct.and.returnValue(of(adminProductFixture()));
     api.getCategories.and.returnValue(of([categoryFixture()])); api.getPolicies.and.returnValue(of([policyFixture()]));
     api.saveCategory.and.returnValue(of(categoryFixture())); api.savePolicy.and.returnValue(of(policyFixture()));
