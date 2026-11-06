@@ -41,7 +41,7 @@ export const ADMIN_ROUTES: Routes = [
         title: 'Productos',
         loadComponent: () =>
           import(
-            './pages/products/product-list/product-list-component/product-list-component'
+            './pages/products/product-list.component'
           ).then((m) => m.ProductListComponent),
       },
       {
@@ -49,16 +49,26 @@ export const ADMIN_ROUTES: Routes = [
         title: 'Crear Producto',
         loadComponent: () =>
           import(
-            './pages/products/product-form/product-form-component/product-form-component'
-          ).then((m) => m.ProductFormComponent),
+            './pages/products/product-editor.component'
+          ).then((m) => m.ProductEditorComponent),
       },
       {
         path: 'products/edit/:id',
         title: 'Editar Producto',
         loadComponent: () =>
           import(
-            './pages/products/product-form/product-form-component/product-form-component'
-          ).then((m) => m.ProductFormComponent),
+            './pages/products/product-editor.component'
+          ).then((m) => m.ProductEditorComponent),
+      },
+      {
+        path: 'categories',
+        title: 'Categorías',
+        loadComponent: () => import('./pages/categories/categories-page').then(m => m.CategoriesPage),
+      },
+      {
+        path: 'policies',
+        title: 'Políticas',
+        loadComponent: () => import('./pages/policies/policies-page').then(m => m.PoliciesPage),
       },
       {
         path: 'users',

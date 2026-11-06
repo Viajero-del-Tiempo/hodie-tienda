@@ -1,0 +1,68 @@
+<div class="profile">
+  <header><h1>Mi perfil</h1><a matButton routerLink="/profile/orders">Mis pedidos</a></header>
+  @if (loading) { <p role="status">Cargando perfil…</p> }
+  @if (error) { <p role="alert" class="error">{{ error }}</p> }
+  @if (!loading && !user) { <button matButton (click)="load()">Reintentar</button> }
+  @if (notice) { <p role="status">{{ notice }}</p> }
+  @if (conflict) {
+    <section class="conflict" role="alert"><h2>El perfil cambió</h2><p>{{ conflict }}</p><p>Tu borrador sigue en esta pantalla.</p>
+      <button matButton (click)="inspectConflict()" [disabled]="saving">Ver los datos actuales</button>
+      @if (latest) {
+        <h3>Datos guardados actualmente</h3><p>Nombre: {{ latest.displayName }}</p>
+        @for (row of latest.addresses; track row.id ?? $index) { <p>{{ row.recipientName }} — {{ row.street }}, {{ row.city }} @if (row.id === latest.defaultAddressId) { (Predeterminada) }</p> }
+        @for (row of latest.billingProfiles; track row.id ?? $index) { <p>{{ row.legalName }} — {{ row.ruc }} @if (row.id === latest.defaultBillingProfileId) { (Predeterminado) }</p> }
+        <p>Conservar el borrador reemplazará las listas actuales cuando lo guardes.</p>
+        <button matButton (click)="keepDraft()">Conservar borrador y usar la versión actual</button>
+        <button matButton (click)="discardDraft()">Descartar borrador y cargar los datos actuales</button>
+      }
+    </section>
+  }
+  @if (user && draft; as data) {
+    <fieldset [disabled]="saving">
+      <mat-card appearance="outlined"><mat-card-content>
+        <h2>Datos personales</h2><p>Teléfono: <strong>{{ user.phoneNumber }}</strong></p><p>El teléfono identifica tu sesión y no se edita.</p>
+        <div [formGroup]="nameForm"><mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="displayName" autocomplete="name" maxlength="200" /><mat-error>{{ message(nameForm, 'displayName') }}</mat-error></mat-form-field></div>
+      </mat-card-content></mat-card>
+      <mat-card appearance="outlined"><mat-card-content><h2>Direcciones guardadas</h2>
+        @for (row of data.addresses; track row.id ?? $index; let i = $index) {
+          <article><h3>{{ row.alias || row.street }}</h3><p>{{ row.recipientName }} — {{ row.street }}, {{ row.city }}, {{ row.department }}</p>
+            @if (row.id && row.id === data.defaultAddressId) { <p>Predeterminada</p> }
+            @if (rowError('addresses', i)) { <p class="error" role="alert">{{ rowError('addresses', i) }}</p> }
+            <button matButton (click)="editAddress(i)">Editar</button><button matButton (click)="removeAddress(i)">Borrar</button>
+            <button matButton [disabled]="!row.id" (click)="data.defaultAddressId = row.id">Elegir como predeterminada</button>
+            @if (!row.id) { <small>Guardá los cambios para poder elegirla como predeterminada.</small> }
+          </article>
+        } @empty { <p>No tenés direcciones guardadas.</p> }
+        <button matButton (click)="editAddress()" [disabled]="data.addresses.length >= 30">Agregar dirección</button>
+        @if (addressEditor) {
+          <section class="editor" [formGroup]="addressEditor"><h3>{{ addressIndex === null ? 'Nueva dirección' : 'Editar dirección' }}</h3>
+            <mat-form-field appearance="outline"><mat-label>Nombre de la dirección (opcional)</mat-label><input matInput formControlName="alias" maxlength="200" /><mat-error>{{ message(addressEditor, 'alias') }}</mat-error></mat-form-field>
+            @for (form of [addressEditor]; track form.editorId) { <app-shipping-form [form]="form" (shippingChange)="shipping = $event" /> }
+            <button matButton (click)="applyAddress()" [disabled]="addressEditor.invalid || !shipping">Aplicar al borrador</button><button matButton (click)="addressEditor = null">Cancelar edición</button>
+          </section>
+        }
+      </mat-card-content></mat-card>
+      <mat-card appearance="outlined"><mat-card-content><h2>Datos de facturación</h2>
+        @for (row of data.billingProfiles; track row.id ?? $index; let i = $index) {
+          <article><h3>{{ row.alias || row.legalName }}</h3><p>{{ row.legalName }} — {{ row.ruc }}</p>
+            @if (row.id && row.id === data.defaultBillingProfileId) { <p>Predeterminado</p> }
+            @if (row.rucValidation?.status === 'mismatch_confirmed') { <p>RUC guardado con discrepancia de dígito aceptada.</p> }
+            @if (rowError('billingProfiles', i)) { <p class="error" role="alert">{{ rowError('billingProfiles', i) }}</p> }
+            <button matButton (click)="editBilling(i)">Editar</button><button matButton (click)="removeBilling(i)">Borrar</button>
+            <button matButton [disabled]="!row.id" (click)="data.defaultBillingProfileId = row.id">Elegir como predeterminado</button>
+            @if (!row.id) { <small>Guardá los cambios para poder elegirlo como predeterminado.</small> }
+          </article>
+        } @empty { <p>No tenés datos de facturación guardados.</p> }
+        <button matButton (click)="editBilling()" [disabled]="data.billingProfiles.length >= 30">Agregar datos de facturación</button>
+        @if (billingEditor) {
+          <section class="editor" [formGroup]="billingEditor"><h3>{{ billingIndex === null ? 'Nuevos datos de facturación' : 'Editar facturación' }}</h3>
+            <mat-form-field appearance="outline"><mat-label>Nombre del registro (opcional)</mat-label><input matInput formControlName="alias" maxlength="200" /><mat-error>{{ message(billingEditor, 'alias') }}</mat-error></mat-form-field>
+            @for (form of [billingEditor]; track form.editorId) { <app-billing-form [form]="form" (validationReady)="rucReady = $event" /> }
+            <button matButton (click)="applyBilling()" [disabled]="billingEditor.invalid || !rucReady">Aplicar al borrador</button><button matButton (click)="billingEditor = null">Cancelar edición</button>
+          </section>
+        }
+      </mat-card-content></mat-card>
+    </fieldset>
+    <button matButton="filled" (click)="save()" [disabled]="saving || !!conflict || !!addressEditor || !!billingEditor">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
+  }
+</div>

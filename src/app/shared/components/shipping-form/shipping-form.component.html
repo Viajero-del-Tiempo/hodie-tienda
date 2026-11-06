@@ -1,0 +1,20 @@
+<div [formGroup]="form" class="fields">
+  <mat-form-field appearance="outline" class="wide">
+    <mat-label>Nombre y apellido del destinatario</mat-label><input matInput formControlName="recipientName" autocomplete="name" maxlength="200" />
+    <mat-error>{{ message(form, 'recipientName') }}</mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="city" autocomplete="address-level2" maxlength="200" /><mat-error>{{ message(form, 'city') }}</mat-error></mat-form-field>
+  <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="department" autocomplete="address-level1" maxlength="200" /><mat-error>{{ message(form, 'department') }}</mat-error></mat-form-field>
+  <div class="wide delivery" aria-live="polite">
+    @if (loading) { Consultando tipo de envío… }
+    @else if (options) { {{ options.label }} }
+    @else if (error) { <span role="alert">{{ error }}</span> <button matButton type="button" (click)="retry()">Reintentar</button> }
+    @else { Elegí la ciudad para ver el tipo de envío. }
+  </div>
+  @if (options?.requiresRecipientDocument) {
+    <mat-form-field appearance="outline" class="wide"><mat-label>Cédula del destinatario</mat-label><input matInput formControlName="recipientDocument" inputmode="numeric" maxlength="200" /><mat-hint>La transportadora necesita este dato.</mat-hint><mat-error>{{ message(form, 'recipientDocument') }}</mat-error></mat-form-field>
+  }
+  <mat-form-field appearance="outline" class="wide"><mat-label>Calle, número o referencia</mat-label><input matInput formControlName="street" autocomplete="street-address" maxlength="200" /><mat-error>{{ message(form, 'street') }}</mat-error></mat-form-field>
+  <mat-form-field appearance="outline"><mat-label>Código postal (opcional)</mat-label><input matInput formControlName="postalCode" autocomplete="postal-code" maxlength="200" /><mat-error>{{ message(form, 'postalCode') }}</mat-error></mat-form-field>
+  <mat-form-field appearance="outline" class="wide"><mat-label>Indicaciones de entrega (opcional)</mat-label><input matInput formControlName="instructions" maxlength="200" /><mat-error>{{ message(form, 'instructions') }}</mat-error></mat-form-field>
+</div>

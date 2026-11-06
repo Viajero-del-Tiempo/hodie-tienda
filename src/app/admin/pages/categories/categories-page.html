@@ -1,0 +1,18 @@
+<header><h1>Categorías</h1><button type="button" (click)="edit()" [disabled]="saving">Nueva categoría</button></header>
+@if (loading) { <p role="status">Cargando categorías…</p> }
+<div class="table-scroll"><table><thead><tr><th>Orden</th><th>Nombre</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
+  @for (category of categories; track category.id) { <tr><td>{{ category.order }}</td><td>{{ category.name }}<small>{{ category.id }}</small></td>
+    <td>{{ category.active ? 'Activa' : 'Inactiva' }}</td><td><button type="button" (click)="edit(category)" [disabled]="saving">Editar</button></td></tr> }
+</tbody></table></div>
+@if (error) { <p class="error" role="alert">{{ error }}</p> }
+@if (notice) { <p role="status">{{ notice }}</p> }
+<form [formGroup]="form" (ngSubmit)="save()"><fieldset [disabled]="saving"><legend>{{ existingId ? 'Editar categoría' : 'Crear categoría' }}</legend>
+  <label>ID estable <input formControlName="id" [readOnly]="!!existingId" required /></label><small role="alert">{{ message(form.get('id')) }}</small>
+  @if (existingId) { <p>El ID se conserva al editar el nombre.</p> }
+  <label>Nombre <input formControlName="name" required /></label><small role="alert">{{ message(form.get('name')) }}</small>
+  <label>Descripción <textarea formControlName="description"></textarea></label><small role="alert">{{ message(form.get('description')) }}</small>
+  <label>Orden <input type="number" formControlName="order" min="0" step="1" required /></label><small role="alert">{{ message(form.get('order')) }}</small>
+  <label class="check"><input type="checkbox" formControlName="active" /> Activa</label><small role="alert">{{ message(form.get('active')) }}</small>
+  <p>Para desactivar una categoría, primero desactivá sus productos activos.</p>
+  <button type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar categoría' }}</button>
+</fieldset></form>

@@ -1,0 +1,21 @@
+<div [formGroup]="form">
+  <mat-form-field appearance="outline"><mat-label>Razón social</mat-label><input matInput formControlName="legalName" maxlength="200" /><mat-error>{{ message(form, 'legalName') }}</mat-error></mat-form-field>
+  <mat-form-field appearance="outline"><mat-label>RUC</mat-label><input matInput formControlName="ruc" (blur)="trimRuc()" inputmode="text" maxlength="200" /><mat-hint>Número, guion y dígito verificador. También podés ingresar solo el número.</mat-hint><mat-error>{{ message(form, 'ruc') }}</mat-error></mat-form-field>
+  <div aria-live="polite">
+    @if (loading) { <p>Validando RUC…</p> }
+    @if (error) { <p role="alert">{{ error }} <button matButton type="button" (click)="retry()">Reintentar</button></p> }
+    @if (analysis?.status === 'confirmation_required') {
+      <div class="confirmation">
+        @if (form.controls['confirmedRuc'].value) { <p>RUC confirmado: {{ form.controls['confirmedRuc'].value }}</p> }
+        @else { <p>¿Tu RUC es {{ analysis?.suggestedRuc }}?</p><button matButton type="button" (click)="confirm()">Sí, confirmo este RUC</button><button matButton type="button" (click)="correct()">Corregir</button> }
+      </div>
+    }
+    @if (analysis?.status === 'mismatch') {
+      <div class="confirmation">
+        <p>El dígito verificador no coincide. Podés corregir el RUC o confirmar que querés usarlo como lo ingresaste.</p>
+        <button matButton type="button" (click)="correct()">Corregir RUC</button>
+        <mat-checkbox formControlName="acknowledgeRucMismatch">Confirmo que quiero continuar con este RUC</mat-checkbox>
+      </div>
+    }
+  </div>
+</div>

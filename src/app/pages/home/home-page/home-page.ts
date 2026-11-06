@@ -14,8 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card-component/product-card-component';
-import { ProductService } from '../../../core/services/product.service';
-import { Product } from '../../../core/models/product.model';
+import { CatalogService } from '../../../core/services/catalog.service';
+import { ProductSummary } from '../../../core/models/catalog.model';
 
 // Importar función para registrar elementos personalizados de Swiper
 import { register } from 'swiper/element/bundle';
@@ -39,7 +39,7 @@ import { register } from 'swiper/element/bundle';
 })
 export class HomePage implements OnInit {
   // Datos para "Los Más Populares"
-  featuredProducts: Product[] = [];
+  featuredProducts: ProductSummary[] = [];
 
 
   // Datos para Propuestas de Valor
@@ -61,7 +61,7 @@ export class HomePage implements OnInit {
     },
   ];
 
-  private productService = inject(ProductService);
+  private productService = inject(CatalogService);
   private cdr = inject(ChangeDetectorRef);
 
   constructor() {
@@ -74,8 +74,8 @@ export class HomePage implements OnInit {
   }
 
   private fetchFeaturedProducts() {
-    this.productService.getProducts().subscribe({
-      next: (products) => {
+    this.productService.searchProducts({ pageSize: 10 }).subscribe({
+      next: ({ products }) => {
         // Tomamos los primeros 10 como "destacados" por ahora
         this.featuredProducts = products.slice(0, 10);
         this.cdr.markForCheck();

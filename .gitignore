@@ -38,6 +38,7 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+salida-*.txt
 
 # System files
 .DS_Store
@@ -48,3 +49,6 @@ Thumbs.db
 
 #Firebase
 .firebase
+
+#Firebase
+/dist/hodie-tienda/

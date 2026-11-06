@@ -1,0 +1,19 @@
+<header><h1>Productos</h1><a routerLink="/admin/products/new">Crear producto</a></header>
+<div class="row"><label>Buscar por nombre, slug o SKU <input type="search" [value]="query" (input)="filter($event, 'query')" /></label>
+  <label>Categoría <select [value]="categoryId" (change)="filter($event, 'categoryId')"><option value="">Todas</option>
+    @for (row of categories; track row.id) { <option [value]="row.id">{{ row.name }}</option> }</select></label>
+  <label>Estado <select [value]="state" (change)="filter($event, 'state')"><option value="">Todos</option><option value="active">Activos</option><option value="inactive">Inactivos</option></select></label>
+  <button type="button" (click)="load()" [disabled]="loading || busy.size > 0">Actualizar listado</button>
+</div>
+@if (loading) { <p role="status">Cargando productos…</p> }
+@if (error) { <p class="error" role="alert">{{ error }}</p> }
+<div class="table-scroll"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Precio desde</th><th>Variantes</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+  @for (product of filtered; track product.id) {
+    <tr><td>{{ product.name }}<small>{{ product.slug }}</small></td><td>{{ category(product) }}</td>
+      <td>{{ product.priceFrom === null ? 'Sin variantes activas' : (product.priceFrom | guarani) }}</td><td>{{ product.variants.length }}</td>
+      <td>{{ product.active ? 'Activo' : 'Inactivo' }}</td><td><div class="actions"><a [routerLink]="['/admin/products/edit', product.id]">Editar</a>
+        <button type="button" (click)="toggle(product)" [disabled]="busy.has(product.id) || loading || !!rowErrors[product.id]">{{ product.active ? 'Desactivar' : 'Reactivar' }}</button></div>
+        @if (rowErrors[product.id]) { <p class="error" role="alert">{{ rowErrors[product.id] }}</p><button type="button" (click)="refresh(product)" [disabled]="busy.has(product.id)">Consultar datos actuales antes de reintentar</button> }
+      </td></tr>
+  } @empty { @if (!loading && !error) { <tr><td colspan="6">No hay productos para estos filtros.</td></tr> } }
+</tbody></table></div>

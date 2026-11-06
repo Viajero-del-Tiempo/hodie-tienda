@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, firstValueFrom, of, catchError } from 'rxjs';
-import { User } from '../models/user.model';
+import { ProfileUpdate, RucAnalysis, User } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 
 export interface AdminUsersResponse {
@@ -66,10 +66,15 @@ export class UserService {
   }
 
   /**
-   * Actualiza el perfil del usuario autenticado desde el checkout (nombre, direcciones).
+   * Guarda el borrador propio con la versión leída. Devuelve IDs y versión nuevos.
    */
-  async updateMyProfile(profileData: Partial<User>): Promise<void> {
-    await firstValueFrom(this.http.put(`${this.apiUrl}/users/me`, profileData));
+  async updateMyProfile(profileData: ProfileUpdate): Promise<User> {
+    const response = await firstValueFrom(this.http.put<MyProfileResponse>(`${this.apiUrl}/users/me`, profileData));
+    return { ...response.user, createdAt: this.parseTimestamp(response.user.createdAt) };
+  }
+
+  validateRuc(ruc: string): Observable<RucAnalysis> {
+    return this.http.post<RucAnalysis>(`${this.apiUrl}/users/me/ruc/validate`, { ruc });
   }
 
   /**

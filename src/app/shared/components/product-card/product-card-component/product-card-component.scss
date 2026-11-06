@@ -7,10 +7,10 @@
 .product-card {
   display: flex;
   flex-direction: column;
-  height: 420px; // Altura fija para la tarjeta
+  min-height: 420px;
   
   .product-card-image {
-    height: 250px; // Altura fija para la imagen
+    height: 220px;
     width: 100%;
     object-fit: contain;
   }
@@ -43,3 +43,6 @@
     )
   );
 }
+.variant-samples { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.5rem; font-size:.75rem; max-height:5rem; overflow:auto; }
+.variant-samples img { width:24px; height:24px; object-fit:cover; }
+.sold-out { opacity:.5; }

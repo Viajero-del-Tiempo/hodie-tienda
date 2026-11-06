@@ -1,0 +1,16 @@
+<section aria-labelledby="agent-config-heading">
+  <h2 id="agent-config-heading">Configuración del agente</h2>
+  <p>Si la suma de unidades del carrito supera este umbral, el bot ofrece atención de una persona. No cambia el límite por ítem del checkout.</p>
+  @if (loading) { <p role="status">Cargando configuración…</p> }
+  @if (error) { <p class="error" role="alert">{{ error }}</p> }
+  @if (notice) { <p role="status">{{ notice }}</p> }
+  <form [formGroup]="form" (ngSubmit)="save()"><fieldset [disabled]="loading || saving || !ready">
+    <label>Umbral de unidades para atención corporativa
+      <input type="number" formControlName="corporateQuantityThreshold" min="1" step="1" required
+        [attr.aria-invalid]="!!message(form.get('corporateQuantityThreshold'))" aria-describedby="agent-threshold-error" />
+    </label>
+    <small id="agent-threshold-error" role="alert">{{ message(form.get('corporateQuantityThreshold')) }}</small>
+    <button type="submit" [disabled]="saving || conflict">{{ saving ? 'Guardando…' : 'Guardar configuración' }}</button>
+  </fieldset></form>
+  @if (conflict || (!ready && !loading)) { <button type="button" (click)="load(true)" [disabled]="loading || saving">Recargar configuración y conservar borrador</button> }
+</section>

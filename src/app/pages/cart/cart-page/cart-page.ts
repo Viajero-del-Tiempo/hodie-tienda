@@ -1,75 +1,57 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Observable } from 'rxjs';
-
-// --- SERVICIOS Y MODELOS ---
-import { Cart, CartItem, CartService } from '@core/services/cart.service';
-
-// --- MÓDULOS DE ANGULAR MATERIAL ---
-import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { CartItem, CartService } from '@core/services/cart.service';
 import { GuaraniPipe } from '@core/pipes/guarani.pipe';
+import { textLength, variantLabel } from '@core/models/catalog.util';
 import { QuantityInputComponent } from '../../../shared/components/quantity-input/quantity-input-component/quantity-input-component';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
-// --- COMPONENTE ---
 @Component({
-  selector: 'app-cart-page',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    // Material
-    MatIconModule,
-    MatButtonModule,
-    MatCardModule,
-    MatDividerModule,
-    MatTooltipModule,
-    // App
-    GuaraniPipe,
-    QuantityInputComponent,
-  ],
-  templateUrl: './cart-page.html',
-  styleUrls: ['./cart-page.scss'],
+  selector: 'app-cart-page', standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, GuaraniPipe, QuantityInputComponent],
+  templateUrl: './cart-page.html', styleUrls: ['./cart-page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CartPage {
+export class CartPage implements OnInit {
   cartService = inject(CartService);
-  location = inject(Location);
+  private cdr = inject(ChangeDetectorRef);
+  cart$ = this.cartService.getCart();
+  label = variantLabel;
+  length = textLength;
+  editing: Record<string,string> = {};
+  errors: string[] = [];
+  isReviewing = false;
+  notice = '';
 
-  cart$: Observable<Cart> = this.cartService.getCart();
-
-  /**
-   * Actualiza la cantidad de un artículo en el carrito.
-   * @param {CartItem} item - El artículo del carrito.
-   * @param {number} newQuantity - La nueva cantidad.
-   */
-  onQuantityChange(item: CartItem, newQuantity: number): void {
-    this.cartService.updateItemQuantity(item.itemId, newQuantity);
+  ngOnInit(): void { void this.review(); }
+  async review(): Promise<void> {
+    if (this.isReviewing) return;
+    this.isReviewing = true;
+    try {
+      const result = await this.cartService.refreshCatalog();
+      this.errors = result.errors;
+      if (result.changed) this.notice = 'Actualizamos los datos y precios del carrito. Revisá el resumen.';
+    } catch { this.errors = ['No se pudo revisar el catálogo. Intentá nuevamente.']; }
+    finally { this.isReviewing = false; this.cdr.markForCheck(); }
   }
-
-  /**
-   * Elimina un artículo del carrito.
-   * @param {string} itemId - El ID del artículo a eliminar.
-   */
-  removeItem(itemId: string): void {
-    this.cartService.removeFromCart(itemId);
+  maxQuantity(item: CartItem): number {
+    return Math.min(100,this.cartService.remainingQuantity(item.productId,item.variantId,item.variant.stock,item.itemId));
   }
-
-  /**
-   * Vacía todo el carrito.
-   */
-  clearCart(): void {
-    this.cartService.clearCart();
+  updateQuantity(item: CartItem, quantity: number): void {
+    if (this.cartService.updateItemQuantity(item.itemId,quantity)) void this.review();
   }
-
-  /**
-   * Navega a la página anterior.
-   */
-  goBack(): void {
-    this.location.back();
+  editText(item: CartItem): void { this.editing[item.itemId] = item.customization; }
+  saveText(item: CartItem): void {
+    if (this.cartService.updateCustomization(item.itemId,this.editing[item.itemId])) {
+      delete this.editing[item.itemId]; void this.review();
+    }
   }
+  removeText(item: CartItem): void {
+    if (this.cartService.updateCustomization(item.itemId,'')) { delete this.editing[item.itemId]; void this.review(); }
+  }
+  remove(item: CartItem): void { this.cartService.removeFromCart(item.itemId); delete this.editing[item.itemId]; void this.review(); }
 }

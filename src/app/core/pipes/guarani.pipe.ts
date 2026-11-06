@@ -5,8 +5,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class GuaraniPipe implements PipeTransform {
 
-  transform(value: number | undefined): string {
-    if (value === undefined) {
+  transform(value: number | undefined | null): string {
+    if (value === undefined || value === null) {
       return '';
     }
     const formateador = new Intl.NumberFormat('es-PY', {

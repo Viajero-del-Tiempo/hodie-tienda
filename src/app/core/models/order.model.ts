@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
-import { PackagingOption } from './packaging.model';
-import { ShippingAddress } from './user.model';
+import { CatalogPackagingOption } from './catalog.model';
+import { BillingInput, BillingSnapshot, ShippingAddress } from './user.model';
 
 /**
  * Estados por los que puede pasar un pedido.
@@ -21,6 +21,9 @@ export enum OrderStatus {
  */
 export interface OrderItem {
   productId: string;
+  variantId?: string;
+  variantLabel?: string;
+  sku?: string;
   productName: string;
   productSku: string;
   quantity: number;
@@ -29,7 +32,7 @@ export interface OrderItem {
   price: number;
 
   // Empaque seleccionado por el cliente
-  selectedPackaging: PackagingOption | null;
+  selectedPackaging: CatalogPackagingOption | null;
 
   // URL de la imagen para mostrar en el resumen
   imageUrl: string;
@@ -40,6 +43,54 @@ export interface OrderItem {
   customizationImageUrl?: string;
   customizationImagePending?: boolean;
   instructions?: string;
+}
+
+export interface CreateOrderItem {
+  productId: string;
+  variantId: string;
+  quantity: number;
+  packagingType: string | null;
+  customization?: string;
+  customizationPending?: boolean;
+  customizationImagePending?: boolean;
+}
+
+export interface CreateOrderRequest {
+  items: CreateOrderItem[];
+  shippingAddress: ShippingAddress;
+  billing?: BillingInput;
+  saveShippingAddress?: boolean;
+  saveBillingProfile?: boolean;
+}
+
+export interface ShippingOptions {
+  city: string;
+  shippingMethod: 'local_gratis' | 'transportadora_contra_entrega';
+  shippingCost: number;
+  requiresRecipientDocument: boolean;
+  label: string;
+}
+export interface CustomerOrderSummary {
+  id: string;
+  orderNumber: string;
+  createdAt?: string;
+  updatedAt?: string;
+  total: number;
+  status: string;
+}
+export interface CustomerOrder extends CustomerOrderSummary {
+  items: OrderItem[];
+  shippingAddress: ShippingAddress;
+  billing: BillingSnapshot | null;
+  subtotal: number;
+  shippingCost: number;
+  shippingMethod?: string;
+  trackingNumber?: string;
+  pdfDelivered?: boolean;
+}
+export interface CustomerOrdersPage {
+  orders: CustomerOrderSummary[];
+  nextCursor: string | null;
 }
 
 /**
@@ -59,6 +110,8 @@ export interface Order {
 
   // Dirección de envío para este pedido
   shippingAddress: ShippingAddress;
+  billing?: BillingSnapshot | null;
+  shippingMethod?: string;
 
   // Estado y seguimiento
   status: OrderStatus;

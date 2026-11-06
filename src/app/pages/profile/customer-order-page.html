@@ -1,0 +1,33 @@
+<div class="order"><a matButton routerLink="/profile/orders">Volver a Mis pedidos</a>
+  @if (loading) { <p role="status">Cargando pedido…</p> }
+  @if (error) { <p role="alert">{{ error }}</p> }
+  @if (order) {
+    <h1>Pedido {{ order.orderNumber }}</h1><p>{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }} — {{ order.status | statusLabel }}</p>
+    <section><h2>Productos</h2>
+      @for (item of order.items; track order.id + ':' + $index) {
+        <article><h3>{{ item.productName }}</h3><p>{{ item.variantLabel }} @if (item.sku || item.productSku) { — {{ item.sku || item.productSku }} }</p>
+          <p>{{ item.quantity }} × {{ item.price | guarani }}</p>
+          @if (item.selectedPackaging) { <p>Empaque: {{ item.selectedPackaging.name }} (+{{ item.selectedPackaging.price | guarani }})</p> }
+          @if (item.customization) { <p>Texto: {{ item.customization }}</p> } @else if (item.customizationPending) { <p>Texto pendiente de personalización.</p> }
+          @if (item.customizationImageUrl) { <a [href]="item.customizationImageUrl" target="_blank" rel="noopener noreferrer">Ver imagen de personalización</a> }
+          @else if (item.customizationImagePending) { <p>Imagen de personalización pendiente.</p> }
+        </article>
+      }
+    </section>
+    <section><h2>Envío</h2><p>{{ order.shippingAddress.recipientName }}</p><p>{{ order.shippingAddress.street }}, {{ order.shippingAddress.city }}, {{ order.shippingAddress.department }}</p>
+      @if (order.shippingMethod === 'transportadora_contra_entrega') { <p>Transportadora: flete a pagar contra entrega.</p>@if (order.shippingAddress.recipientDocument) { <p>Cédula del destinatario: {{ order.shippingAddress.recipientDocument }}</p> } }
+      @else if (order.shippingMethod === 'local_gratis') { <p>Envío local gratuito.</p> }
+      @if (order.shippingAddress.instructions) { <p>{{ order.shippingAddress.instructions }}</p> }
+      @if (order.trackingNumber) { <p>Seguimiento: {{ order.trackingNumber }}</p> }
+    </section>
+    <section><h2>Facturación</h2>
+      @if (order.billing?.invoiceRequested) { <p>Solicitaste factura con RUC.</p><p>Razón social: {{ order.billing?.legalName }}</p><p>RUC: {{ order.billing?.ruc }}</p>
+        @if (order.billing?.rucValidation?.status === 'mismatch_confirmed') { <p>Confirmaste este RUC aunque su dígito verificador no coincide.</p> }
+      } @else if (order.billing) { <p>Consumidor final.</p> } @else { <p>Datos de facturación no registrados.</p> }
+    </section>
+    <section><p>Subtotal: {{ order.subtotal | guarani }}</p><p><strong>Total: {{ order.total | guarani }}</strong></p>
+      <p>El PDF es un resumen del pedido, no es una factura.</p><button matButton (click)="downloadPdf()" [disabled]="downloading">Descargar resumen PDF</button>
+      @if (pdfError) { <p role="alert">{{ pdfError }}</p> }
+    </section>
+  }
+</div>
